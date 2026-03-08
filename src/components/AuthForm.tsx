@@ -177,7 +177,7 @@ export default function AuthForm() {
               <FormControl>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-11 pr-12 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-11 pr-12 h-10 bg-background border-border/80 rounded-xl text-sm transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors">
                     {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                   </button>
