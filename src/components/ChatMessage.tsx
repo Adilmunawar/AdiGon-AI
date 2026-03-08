@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { User, Copy, Code, Paperclip, Volume2, VolumeX, Check } from "lucide-react";
+import { User, Copy, Code, Paperclip, Volume2, VolumeX, Check, ThumbsUp, ThumbsDown, RefreshCw, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
