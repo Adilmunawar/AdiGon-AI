@@ -150,7 +150,7 @@ export default function AuthForm() {
                 <FormControl>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                    <Input placeholder="John Doe" {...field} disabled={isSubmitting} className="pl-11 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                    <Input placeholder="John Doe" {...field} disabled={isSubmitting} className="pl-11 h-10 bg-background border-border/80 rounded-xl text-sm transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                   </div>
                 </FormControl>
                 <FormMessage />
