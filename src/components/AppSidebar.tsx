@@ -85,22 +85,22 @@ export default function AppSidebar({
   }
   return (
     <>
-      <Sidebar className="bg-slate-900 border-slate-800">
-        <SidebarHeader className="border-b border-slate-800 p-4">
+      <Sidebar className="bg-card border-border">
+        <SidebarHeader className="border-b border-border p-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-              <Bot className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-md">
+              <Bot className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">AdiGon AI</h1>
-              <p className="text-sm text-slate-400">Intelligent Assistant</p>
+              <h1 className="text-xl font-bold text-foreground">AdiGon AI</h1>
+              <p className="text-sm text-muted-foreground">Intelligent Assistant</p>
             </div>
           </div>
         </SidebarHeader>
 
         <SidebarContent className="p-4">
           <SidebarGroup>
-            <SidebarGroupLabel className="text-slate-400 text-xs uppercase tracking-wider mb-3">
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider mb-3">
               Chat
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -108,7 +108,7 @@ export default function AppSidebar({
                 <SidebarMenuItem>
                   <SidebarMenuButton 
                     onClick={handleNewChat}
-                    className="w-full justify-start gap-3 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 hover:border-blue-500/40 text-blue-400 hover:text-blue-300 rounded-xl transition-all duration-200"
+                    className="w-full justify-start gap-3 p-3 bg-primary/10 border border-primary/20 hover:border-primary/40 text-primary hover:text-primary rounded-xl transition-all duration-200"
                   >
                     <Plus className="w-5 h-5" />
                     <span className="font-medium">New Chat</span>
@@ -120,7 +120,7 @@ export default function AppSidebar({
 
           {conversations.length > 0 && (
             <SidebarGroup>
-              <SidebarGroupLabel className="text-slate-400 text-xs uppercase tracking-wider mb-3">
+              <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider mb-3">
                 Recent Chats
               </SidebarGroupLabel>
               <SidebarGroupContent>
@@ -133,8 +133,8 @@ export default function AppSidebar({
                           className={cn(
                             "flex-1 justify-start gap-3 p-3 rounded-xl transition-all duration-200 truncate",
                             activeConversationId === conversation.id
-                              ? "bg-slate-800 text-white border border-slate-700"
-                              : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
+                              ? "bg-primary/10 text-foreground border border-primary/20"
+                              : "text-muted-foreground hover:bg-muted hover:text-foreground"
                           )}
                         >
                           <MessageSquare className="w-4 h-4 flex-shrink-0" />
@@ -144,7 +144,7 @@ export default function AppSidebar({
                           variant="ghost"
                           size="icon"
                           onClick={() => onDeleteConversation(conversation.id)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 h-8 w-8 text-slate-500 hover:text-red-400 hover:bg-red-500/10"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -156,12 +156,12 @@ export default function AppSidebar({
             </SidebarGroup>
           )}
         </SidebarContent>
-        <SidebarFooter className="border-t border-slate-800 p-4">
+        <SidebarFooter className="border-t border-border p-4">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton 
                 onClick={() => setIsSettingsOpen(true)}
-                className="w-full justify-start gap-3 p-3 text-slate-300 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all duration-200"
+                className="w-full justify-start gap-3 p-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-xl transition-all duration-200"
               >
                 <Key className="w-5 h-5" />
                 <span>API Settings</span>
@@ -170,7 +170,7 @@ export default function AppSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton 
                 onClick={() => setIsAdvancedSettingsOpen(true)}
-                className="w-full justify-start gap-3 p-3 text-slate-300 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all duration-200"
+                className="w-full justify-start gap-3 p-3 text-muted-foreground hover:bg-muted hover:text-foreground rounded-xl transition-all duration-200"
               >
                 <Settings className="w-5 h-5" />
                 <span>Advanced Settings</span>
@@ -180,7 +180,7 @@ export default function AppSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={handleSignOut}
-                  className="w-full justify-start gap-3 p-3 text-slate-300 hover:bg-red-500/10 hover:text-red-400 rounded-xl transition-all duration-200"
+                  className="w-full justify-start gap-3 p-3 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-xl transition-all duration-200"
                 >
                   <LogOut className="w-5 h-5" />
                   <span>Sign Out</span>
@@ -189,16 +189,16 @@ export default function AppSidebar({
             )}
           </SidebarMenu>
           {user && (
-            <div className="mt-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
+            <div className="mt-4 p-3 bg-muted rounded-xl border border-border">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-foreground truncate">
                     {user.email}
                   </p>
-                  <p className="text-xs text-slate-400">Authenticated</p>
+                  <p className="text-xs text-muted-foreground">Authenticated</p>
                 </div>
               </div>
             </div>
@@ -207,19 +207,19 @@ export default function AppSidebar({
       </Sidebar>
       {/* API Settings Sheet */}
       <Sheet open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <SheetContent side="left" className="w-96 bg-slate-900 border-slate-800">
+        <SheetContent side="left" className="w-96 bg-background border-border">
           <SheetHeader>
-            <SheetTitle className="text-white flex items-center gap-2">
+            <SheetTitle className="text-foreground flex items-center gap-2">
               <Key className="w-5 h-5" />
               API Configuration
             </SheetTitle>
-            <SheetDescription className="text-slate-400">
+            <SheetDescription className="text-muted-foreground">
               Configure your Gemini API key to start chatting
             </SheetDescription>
           </SheetHeader>
           <div className="space-y-6 mt-6">
             <div className="space-y-3">
-              <Label htmlFor="api-key" className="text-white font-medium">
+              <Label htmlFor="api-key" className="text-foreground font-medium">
                 Gemini API Key
               </Label>
               <Input
@@ -228,15 +228,15 @@ export default function AppSidebar({
                 placeholder="Enter your API key..."
                 value={tempApiKey}
                 onChange={(e) => setTempApiKey(e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
               />
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted-foreground">
                 Get your API key from{" "}
                 <a
                   href="https://makersuite.google.com/app/apikey"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 underline"
+                  className="text-primary hover:text-primary/80 underline"
                 >
                   Google AI Studio
                 </a>
@@ -244,7 +244,7 @@ export default function AppSidebar({
             </div>
             <Button 
               onClick={handleSaveApiKey} 
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-medium"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
             >
               <Zap className="w-4 h-4 mr-2" />
               Save Configuration
@@ -254,13 +254,13 @@ export default function AppSidebar({
       </Sheet>
       {/* Advanced Settings Dialog */}
       <Dialog open={isAdvancedSettingsOpen} onOpenChange={setIsAdvancedSettingsOpen}>
-        <DialogContent className="max-w-4xl w-full bg-slate-900 border-slate-800 text-white max-h-[90vh] overflow-hidden p-0">
+        <DialogContent className="max-w-4xl w-full bg-background border-border text-foreground max-h-[90vh] overflow-hidden p-0">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-white flex items-center gap-2 text-xl">
+            <DialogTitle className="text-foreground flex items-center gap-2 text-xl">
               <Settings className="w-6 h-6" />
               Advanced Settings
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-muted-foreground">
               Customize your AI experience and manage your preferences
             </DialogDescription>
           </DialogHeader>

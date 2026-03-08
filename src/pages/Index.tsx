@@ -68,69 +68,39 @@ const Index = () => {
 
   const loadConversations = async () => {
     if (!user?.id) return;
-    console.log('Loading conversations for user:', user.id);
-    
     try {
       const { data, error } = await supabase
         .from('conversations')
         .select('id, title, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error loading conversations:', error);
-        toast.error("Failed to load conversations");
-        return;
-      }
-      
-      console.log('Loaded conversations:', data);
+      if (error) { toast.error("Failed to load conversations"); return; }
       setConversations(data || []);
     } catch (error) {
-      console.error('Error in loadConversations:', error);
       toast.error("Failed to load conversations");
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      loadConversations();
-    }
-  }, [user]);
+  useEffect(() => { if (user) loadConversations(); }, [user]);
 
   const handleSelectConversation = async (conversationId: string) => {
-    console.log('Selecting conversation:', conversationId);
     setActiveConversationId(conversationId);
-    
     try {
       const { data, error } = await supabase
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
-      
-      if (error) {
-        console.error('Error loading messages:', error);
-        toast.error("Failed to load conversation");
-        return;
-      }
-      
-      console.log('Loaded messages:', data);
+      if (error) { toast.error("Failed to load conversation"); return; }
       const loadedMessages = data.map((msg: any) => ({
         role: msg.role,
         parts: msg.parts,
         ...(msg.image_url && { imageUrl: msg.image_url })
       }));
-      
       setMessages(loadedMessages);
       toast.success("Conversation loaded successfully");
-      
-      // Auto-scroll to bottom after loading messages
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-      
+      setTimeout(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
     } catch (error) {
-      console.error('Error in handleSelectConversation:', error);
       toast.error("Failed to load conversation");
     }
   };
@@ -142,37 +112,23 @@ const Index = () => {
         .delete()
         .eq('id', conversationId)
         .eq('user_id', user?.id);
-      
-      if (error) {
-        console.error('Error deleting conversation:', error);
-        toast.error("Failed to delete conversation");
-        return;
-      }
-      
-      if (activeConversationId === conversationId) {
-        setActiveConversationId(null);
-        setMessages([]);
-      }
-      
+      if (error) { toast.error("Failed to delete conversation"); return; }
+      if (activeConversationId === conversationId) { setActiveConversationId(null); setMessages([]); }
       await loadConversations();
       toast.success("Conversation deleted");
     } catch (error) {
-      console.error('Error in handleDeleteConversation:', error);
       toast.error("Failed to delete conversation");
     }
   };
 
-  // Handle scroll detection for scroll button
   useEffect(() => {
     const handleScroll = (e: Event) => {
       const target = e.target as HTMLElement;
       if (target) {
         const { scrollTop, scrollHeight, clientHeight } = target;
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-        setShowScrollButton(!isNearBottom && messages.length > 2);
+        setShowScrollButton(scrollHeight - scrollTop - clientHeight > 100 && messages.length > 2);
       }
     };
-
     const chatContainer = document.querySelector('main');
     if (chatContainer) {
       chatContainer.addEventListener('scroll', handleScroll);
@@ -180,88 +136,50 @@ const Index = () => {
     }
   }, [messages.length]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messages.length > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      setTimeout(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
     }
   }, [messages.length]);
 
   const extractCodeFromResponse = (responseText: string): GeneratedCode[] => {
     const parsedFiles = parseContent(responseText);
-    
     return parsedFiles
       .filter(file => file.path !== 'SYSTEM_MESSAGE')
-      .map(file => ({
-        fileName: file.path,
-        content: file.code,
-        language: file.language,
-        errors: []
-      }));
+      .map(file => ({ fileName: file.path, content: file.code, language: file.language, errors: [] }));
   };
 
   const handleSendMessage = async (messageText: string, attachments?: FileUploadResult[]) => {
     if ((!messageText.trim() && (!attachments || attachments.length === 0)) || isLoading) return;
-
     const currentMessages = [...messages];
     let enhancedMessage = messageText;
     let imageUrl = null;
-
-    // Process attachments
     if (attachments && attachments.length > 0) {
       for (const attachment of attachments) {
-        if (attachment.type === 'image' && attachment.url) {
-          imageUrl = attachment.url;
-        } else if (attachment.type === 'document' || attachment.type === 'audio') {
-          enhancedMessage = `[ATTACHMENT: ${attachment.name}]\n${enhancedMessage}`;
-        }
+        if (attachment.type === 'image' && attachment.url) imageUrl = attachment.url;
+        else if (attachment.type === 'document' || attachment.type === 'audio') enhancedMessage = `[ATTACHMENT: ${attachment.name}]\n${enhancedMessage}`;
       }
     }
-
-    const userMessage: Message = {
-      role: "user" as const,
-      parts: [{ text: enhancedMessage }],
-      ...(imageUrl && { imageUrl })
-    };
-
+    const userMessage: Message = { role: "user" as const, parts: [{ text: enhancedMessage }], ...(imageUrl && { imageUrl }) };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-
-    // Cycle through loading messages
     let messageIndex = 0;
     setLoadingMessage(loadingMessages[messageIndex]);
-    const loadingInterval = setInterval(() => {
-      messageIndex = (messageIndex + 1) % loadingMessages.length;
-      setLoadingMessage(loadingMessages[messageIndex]);
-    }, 2000);
+    const loadingInterval = setInterval(() => { messageIndex = (messageIndex + 1) % loadingMessages.length; setLoadingMessage(loadingMessages[messageIndex]); }, 2000);
 
     try {
       let systemPrompt = "You are AdiGon AI, a sophisticated and highly advanced AI assistant with cutting-edge capabilities.";
-      
       if (isCoderMode) {
         systemPrompt += ` You are in Advanced Developer Mode. Generate complete, enterprise-grade applications with multiple files, proper architecture, error handling, TypeScript, React, and modern best practices. 
-
 IMPORTANT: When generating code, use this exact format for multiple files:
-
 FILE: path/to/file.extension
 \`\`\`language
 // Complete, production-ready code here
 \`\`\`
-
-FILE: path/to/another-file.extension  
-\`\`\`language
-// More complete code here
-\`\`\`
-
-Always provide fully functional, complete implementations. Never use placeholder comments or incomplete code.`;
+Always provide fully functional, complete implementations.`;
       }
-      
-      if (isDeepSearchMode) {
-        systemPrompt += " You are in Deep Research Mode. Provide comprehensive, well-researched responses with multiple perspectives, detailed analysis, current information, and advanced insights.";
-      }
+      if (isDeepSearchMode) systemPrompt += " You are in Deep Research Mode. Provide comprehensive, well-researched responses with multiple perspectives, detailed analysis, current information, and advanced insights.";
 
       let fileData = null;
       if (imageUrl) {
@@ -269,32 +187,18 @@ Always provide fully functional, complete implementations. Never use placeholder
         const blob = await response.blob();
         const base64 = await new Promise<string>((resolve) => {
           const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(',')[1]);
-          };
+          reader.onload = () => resolve((reader.result as string).split(',')[1]);
           reader.readAsDataURL(blob);
         });
         fileData = { file: blob, base64, dataUrl: imageUrl };
       }
 
-      const aiResponse = await geminiService.generateResponse(
-        enhancedMessage,
-        systemPrompt,
-        fileData
-      );
-
+      const aiResponse = await geminiService.generateResponse(enhancedMessage, systemPrompt, fileData);
       clearInterval(loadingInterval);
       setIsLoading(false);
-
-      const aiMessage: Message = {
-        role: "model" as const,
-        parts: [{ text: aiResponse }]
-      };
-
+      const aiMessage: Message = { role: "model" as const, parts: [{ text: aiResponse }] };
       setMessages(prev => [...prev, aiMessage]);
 
-      // If in coder mode and response contains code, auto-open Advanced Canvas
       if (isCoderMode && (aiResponse.includes('FILE:') || aiResponse.includes('```'))) {
         const extractedFiles = extractCodeFromResponse(aiResponse);
         if (extractedFiles.length > 0) {
@@ -303,7 +207,6 @@ Always provide fully functional, complete implementations. Never use placeholder
           setIsAdvancedCanvasOpen(true);
           toast.success(`Generated ${extractedFiles.length} files - opened in Advanced Canvas!`);
         } else if (aiResponse.includes('```')) {
-          // Single code block
           setCanvasInitialCode(aiResponse);
           setCanvasInitialFiles([]);
           setIsAdvancedCanvasOpen(true);
@@ -311,29 +214,17 @@ Always provide fully functional, complete implementations. Never use placeholder
         }
       }
 
-      // Save conversation if user is logged in
       if (user?.id) {
         try {
           let conversationId = activeConversationId;
-          
           if (!conversationId) {
             const conversationTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
-            const { data: newConversation, error: convError } = await supabase
-              .from('conversations')
-              .insert({
-                user_id: user.id,
-                title: conversationTitle
-              })
-              .select()
-              .single();
-
+            const { data: newConversation, error: convError } = await supabase.from('conversations').insert({ user_id: user.id, title: conversationTitle }).select().single();
             if (convError) throw convError;
             conversationId = newConversation.id;
             setActiveConversationId(conversationId);
             await loadConversations();
           }
-
-          // Save messages
           const messagesToSave = [userMessage, aiMessage].map((msg, index) => ({
             conversation_id: conversationId,
             parts: msg.parts,
@@ -341,24 +232,15 @@ Always provide fully functional, complete implementations. Never use placeholder
             created_at: new Date(Date.now() + index).toISOString(),
             ...(msg.imageUrl && { image_url: msg.imageUrl })
           }));
-
-          const { error: msgError } = await supabase
-            .from('messages')
-            .insert(messagesToSave);
-
-          if (msgError) throw msgError;
+          await supabase.from('messages').insert(messagesToSave);
         } catch (error) {
-          console.error('Error saving conversation:', error);
           toast.error("Failed to save conversation");
         }
       }
-
     } catch (error) {
       clearInterval(loadingInterval);
       setIsLoading(false);
-      console.error('Error:', error);
-      
-      toast.error("I encountered an error processing your request. Our advanced AI system will retry automatically.");
+      toast.error("I encountered an error processing your request.");
       setMessages(currentMessages);
     }
   };
@@ -374,9 +256,7 @@ Always provide fully functional, complete implementations. Never use placeholder
     setIsAdvancedCanvasOpen(true);
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); };
 
   const handleNewChat = async () => {
     setMessages([]);
@@ -388,14 +268,9 @@ Always provide fully functional, complete implementations. Never use placeholder
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-slate-950 overflow-hidden relative">
-        {/* Three.js Background */}
-        <div className="fixed inset-0 opacity-30 pointer-events-none z-0">
-          <ThreeScene className="w-full h-full" />
-        </div>
-        
+      <div className="flex h-screen w-full bg-background overflow-hidden relative">
         {/* Sidebar */}
-        <div className="relative z-30 pointer-events-auto">
+        <div className="relative z-30">
           <AppSidebar
             isSettingsOpen={false}
             setIsSettingsOpen={() => {}}
@@ -411,13 +286,13 @@ Always provide fully functional, complete implementations. Never use placeholder
         </div>
         
         {/* Main Content Area */}
-        <div className="flex flex-col flex-1 min-w-0 relative z-20 pointer-events-auto">
+        <div className="flex flex-col flex-1 min-w-0 relative z-20">
           {/* Advanced Developer Canvas Button */}
           <div className="absolute top-4 right-4 z-40">
             <Button
               onClick={() => setIsAdvancedCanvasOpen(true)}
               size="sm"
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-2xl backdrop-blur-sm border border-purple-500/30"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg border border-primary/20"
             >
               <Zap className="w-4 h-4 mr-2" />
               Advanced Canvas
