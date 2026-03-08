@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { FileUploadResult } from '@/services/uploadService';
 import { GeneratedCode } from '@/services/advancedCodeGenerator';
 import { parseContent } from '@/components/CodeBlock';
+import adigonLogo from '@/assets/adigon-logo.png';
 
 const loadingMessages = [
   "Thinking...",
@@ -111,7 +112,6 @@ const Index = () => {
     if (messages.length > 0) setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [messages.length]);
 
-  // Auto-scroll during streaming
   useEffect(() => {
     if (isStreaming) {
       const interval = setInterval(() => {
@@ -170,20 +170,16 @@ Always provide fully functional implementations.`;
         fileData = { file: blob, base64, dataUrl: imageUrl };
       }
 
-      // Use streaming response
       clearInterval(loadingInterval);
       setIsLoading(false);
       setIsStreaming(true);
 
-      // Add empty AI message that will be filled by streaming
-      const aiMessageIndex = messages.length + 1; // +1 for user message we just added
       setMessages(prev => [...prev, { role: "model" as const, parts: [{ text: "" }] }]);
 
       const aiResponse = await geminiService.generateStreamingResponse(
         enhancedMessage,
         systemPrompt,
         (_chunk, fullText) => {
-          // Update the last message (AI message) with accumulated text
           setMessages(prev => {
             const updated = [...prev];
             const lastIdx = updated.length - 1;
@@ -199,7 +195,6 @@ Always provide fully functional implementations.`;
 
       setIsStreaming(false);
 
-      // Final update with complete response
       const aiMessage: Message = { role: "model" as const, parts: [{ text: aiResponse }] };
       setMessages(prev => {
         const updated = [...prev];
@@ -288,21 +283,32 @@ Always provide fully functional implementations.`;
         />
         
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Top bar */}
-          <header className="flex items-center justify-between h-12 px-4 border-b border-border/60 bg-background">
+          {/* Premium top bar */}
+          <header className="flex items-center justify-between h-13 px-4 border-b border-border/50 bg-background/80 backdrop-blur-xl">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-              <span className="text-sm font-medium text-foreground/80">AdiGon AI</span>
+              <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
+              <div className="h-5 w-px bg-border/60" />
+              <div className="flex items-center gap-2">
+                <img src={adigonLogo} alt="AdiGon AI" className="w-5 h-5" />
+                <span className="text-sm font-semibold text-foreground tracking-tight">AdiGon AI</span>
+              </div>
             </div>
-            <Button
-              onClick={() => setIsAdvancedCanvasOpen(true)}
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs rounded-lg border-border text-muted-foreground hover:text-primary hover:border-primary/30 gap-1.5"
-            >
-              <Zap className="w-3 h-3" />
-              Canvas
-            </Button>
+            <div className="flex items-center gap-2">
+              {userProfile?.name && (
+                <span className="text-xs text-muted-foreground hidden sm:block">
+                  Hi, {userProfile.name.split(' ')[0]}
+                </span>
+              )}
+              <Button
+                onClick={() => setIsAdvancedCanvasOpen(true)}
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs rounded-lg border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30 gap-1.5 transition-all"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Canvas
+              </Button>
+            </div>
           </header>
 
           <EnhancedChatInterface
