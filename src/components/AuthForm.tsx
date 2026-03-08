@@ -193,7 +193,7 @@ export default function AuthForm() {
                 <FormLabel className="text-[13px] font-medium text-foreground/80">Gender</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl>
-                    <SelectTrigger className="h-12 bg-background border-border/80 rounded-xl text-[15px]">
+                    <SelectTrigger className="h-10 bg-background border-border/80 rounded-xl text-sm">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
