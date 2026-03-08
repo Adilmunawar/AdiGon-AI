@@ -44,6 +44,7 @@ const Index = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isCoderMode, setIsCoderMode] = useState(false);
   const [isDeepSearchMode, setIsDeepSearchMode] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash-preview-05-20');
   const [isAdvancedCanvasOpen, setIsAdvancedCanvasOpen] = useState(false);
   const [canvasInitialCode, setCanvasInitialCode] = useState('');
   const [canvasInitialFiles, setCanvasInitialFiles] = useState<GeneratedCode[]>([]);
