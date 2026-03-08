@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Code, MessageSquare, Search, Sparkles, Zap, Cpu } from 'lucide-react';
+import { Code, MessageSquare, Search, Sparkles, Zap, Cpu, Download, FileText } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import EnhancedChatInterface from '@/components/EnhancedChatInterface';
 import EnhancedChatInput from '@/components/EnhancedChatInput';
