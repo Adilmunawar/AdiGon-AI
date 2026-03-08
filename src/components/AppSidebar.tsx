@@ -92,9 +92,7 @@ export default function AppSidebar({
         <SidebarHeader className="p-4 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Bot className="w-4 h-4 text-primary-foreground" />
-              </div>
+              <img src={adigonLogo} alt="AdiGon AI" className="w-8 h-8" />
               <span className="text-sm font-semibold text-foreground tracking-tight">AdiGon AI</span>
             </div>
           </div>
