@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Bot, User, Copy, Code, Paperclip, Volume2, VolumeX, Check, RotateCcw } from "lucide-react";
+import { User, Copy, Code, Paperclip, Volume2, VolumeX, Check } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -90,41 +90,41 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
   }, []);
 
   const MarkdownComponents = {
-    h1: ({node, ...props}: any) => <h1 className="text-xl font-semibold mt-6 mb-3 text-foreground tracking-tight" {...props} />,
-    h2: ({node, ...props}: any) => <h2 className="text-lg font-semibold mt-5 mb-2.5 text-foreground tracking-tight" {...props} />,
+    h1: ({node, ...props}: any) => <h1 className="text-xl font-bold mt-6 mb-3 text-foreground tracking-tight" {...props} />,
+    h2: ({node, ...props}: any) => <h2 className="text-lg font-bold mt-5 mb-2.5 text-foreground tracking-tight" {...props} />,
     h3: ({node, ...props}: any) => <h3 className="text-base font-semibold mt-4 mb-2 text-foreground" {...props} />,
-    p: ({node, ...props}: any) => <p className="mb-3 last:mb-0 break-words text-foreground/85 leading-[1.75]" {...props} />,
-    ul: ({node, ...props}: any) => <ul className="list-disc mb-3 pl-5 text-foreground/85 space-y-1.5" {...props} />,
-    ol: ({node, ...props}: any) => <ol className="list-decimal mb-3 pl-5 text-foreground/85 space-y-1.5" {...props} />,
-    li: ({node, ...props}: any) => <li className="text-foreground/85 leading-relaxed" {...props} />,
-    a: ({node, ...props}: any) => <a className="text-primary underline underline-offset-2 decoration-primary/30 hover:decoration-primary/60 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
-    blockquote: ({node, ...props}: any) => <blockquote className="border-l-2 border-primary/20 pl-4 my-4 text-muted-foreground italic" {...props} />,
-    hr: ({node, ...props}: any) => <hr className="my-6 border-border/50" {...props} />,
+    p: ({node, ...props}: any) => <p className="mb-3 last:mb-0 break-words text-foreground/80 leading-[1.8]" {...props} />,
+    ul: ({node, ...props}: any) => <ul className="list-disc mb-3 pl-5 text-foreground/80 space-y-1.5" {...props} />,
+    ol: ({node, ...props}: any) => <ol className="list-decimal mb-3 pl-5 text-foreground/80 space-y-1.5" {...props} />,
+    li: ({node, ...props}: any) => <li className="text-foreground/80 leading-relaxed" {...props} />,
+    a: ({node, ...props}: any) => <a className="text-primary font-medium underline underline-offset-2 decoration-primary/25 hover:decoration-primary/60 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+    blockquote: ({node, ...props}: any) => <blockquote className="border-l-2 border-primary/15 pl-4 my-4 text-muted-foreground italic" {...props} />,
+    hr: ({node, ...props}: any) => <hr className="my-6 border-border/40" {...props} />,
     table: ({node, ...props}: any) => (
-      <div className="my-4 overflow-x-auto rounded-xl border border-border">
+      <div className="my-4 overflow-x-auto rounded-xl border border-border/60">
         <table className="w-full text-sm" {...props} />
       </div>
     ),
-    thead: ({node, ...props}: any) => <thead className="bg-muted/50 border-b border-border" {...props} />,
+    thead: ({node, ...props}: any) => <thead className="bg-muted/40 border-b border-border/60" {...props} />,
     th: ({node, ...props}: any) => <th className="px-4 py-2.5 text-left font-semibold text-foreground text-xs uppercase tracking-wider" {...props} />,
-    td: ({node, ...props}: any) => <td className="px-4 py-2.5 border-b border-border/40 text-foreground/80" {...props} />,
+    td: ({node, ...props}: any) => <td className="px-4 py-2.5 border-b border-border/30 text-foreground/75" {...props} />,
     code({node, inline, className, children, ...props}: any) {
       const match = /language-(\w+)/.exec(className || '')
-      if (inline) return <code className="bg-primary/[0.06] text-primary/90 px-1.5 py-0.5 rounded-md text-[13px] font-mono font-medium" {...props}>{children}</code>
+      if (inline) return <code className="bg-primary/[0.05] text-primary/85 px-1.5 py-0.5 rounded-md text-[13px] font-mono font-medium" {...props}>{children}</code>
       return (
-        <div className="my-4 rounded-xl overflow-hidden border border-border/60 bg-card shadow-sm">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 bg-muted/30">
-            <div className="flex items-center gap-2">
+        <div className="my-4 rounded-xl overflow-hidden border border-border/50 bg-card shadow-sm">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 bg-muted/20">
+            <div className="flex items-center gap-2.5">
               <div className="flex gap-1">
-                <div className="w-2.5 h-2.5 rounded-full bg-destructive/20" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/20" />
-                <div className="w-2.5 h-2.5 rounded-full bg-primary/20" />
+                <div className="w-2 h-2 rounded-full bg-destructive/25" />
+                <div className="w-2 h-2 rounded-full bg-yellow-500/25" />
+                <div className="w-2 h-2 rounded-full bg-primary/25" />
               </div>
-              <span className="text-[11px] font-mono text-muted-foreground/70 uppercase tracking-wider">{match ? match[1] : 'code'}</span>
+              <span className="text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">{match ? match[1] : 'code'}</span>
             </div>
             <button 
               onClick={() => { navigator.clipboard.writeText(String(children).replace(/\n$/, '')); toast.success("Copied"); }}
-              className="text-[11px] text-muted-foreground/50 hover:text-foreground transition-colors flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted/50"
+              className="text-[10px] text-muted-foreground/40 hover:text-foreground transition-colors flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-muted/50 font-medium"
             >
               <Copy className="w-3 h-3" /> Copy
             </button>
@@ -133,7 +133,7 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
             style={oneLight} 
             language={match ? match[1] : undefined} 
             PreTag="div" 
-            customStyle={{ margin: 0, background: 'transparent', fontSize: '13px', lineHeight: '1.65', padding: '16px' }} 
+            customStyle={{ margin: 0, background: 'transparent', fontSize: '13px', lineHeight: '1.7', padding: '16px' }} 
             {...props}
           >
             {String(children).replace(/\n$/, '')}
@@ -146,20 +146,20 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
   return (
     <div className={cn("group flex items-start gap-3 py-5", isUser && "justify-end")}>
       {!isUser && (
-        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/[0.06] flex items-center justify-center mt-0.5 ring-1 ring-primary/10">
+        <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-primary/[0.06] flex items-center justify-center mt-0.5 ring-1 ring-primary/8">
           <img src={adigonLogo} alt="" className="w-4 h-4" />
         </div>
       )}
       <div className={cn("flex flex-col max-w-[85%] min-w-0", isUser ? "items-end" : "items-start")}>
         {/* Label */}
-        <span className={cn("text-[11px] font-medium mb-1.5 tracking-wide", isUser ? "text-muted-foreground/50" : "text-primary/60")}>
+        <span className={cn("text-[10px] font-semibold mb-1.5 tracking-wide uppercase", isUser ? "text-muted-foreground/40" : "text-primary/50")}>
           {isUser ? 'You' : 'AdiGon AI'}
         </span>
         
         <div className={cn(
-          "text-[15px] leading-[1.75] relative",
+          "text-[15px] leading-[1.8] relative",
           isUser
-            ? "bg-foreground text-background px-4 py-3 rounded-2xl rounded-br-md shadow-sm"
+            ? "bg-foreground text-background px-4 py-3 rounded-2xl rounded-br-sm shadow-sm"
             : "text-foreground"
         )}>
           {isUser ? (
@@ -177,28 +177,28 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
           )}
           {!isUser && !isStreaming && message.code && onReviewCode && (
             <div className="mt-3">
-              <Button variant="outline" size="sm" onClick={() => onReviewCode(message.code!)} className="text-xs h-8 rounded-xl border-border/60 text-muted-foreground hover:text-primary hover:border-primary/20 gap-1.5 transition-all">
+              <Button variant="outline" size="sm" onClick={() => onReviewCode(message.code!)} className="text-xs h-8 rounded-xl border-border/50 text-muted-foreground hover:text-primary hover:border-primary/20 gap-1.5 transition-all">
                 <Code className="h-3 w-3" /> Open in Canvas
               </Button>
             </div>
           )}
         </div>
         
-        {/* Actions — refined */}
+        {/* Actions */}
         {!isUser && !isStreaming && messageText && (
           <div className="flex gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <button onClick={handleCopy} className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/50 transition-all" aria-label="Copy">
+            <button onClick={handleCopy} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-foreground hover:bg-muted/50 transition-all" aria-label="Copy">
               {copied ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
             </button>
-            <button onClick={handleSpeak} className={cn("p-1.5 rounded-lg transition-all", isSpeaking ? "text-primary bg-primary/5" : "text-muted-foreground/40 hover:text-foreground hover:bg-muted/50")} aria-label="Speak">
+            <button onClick={handleSpeak} className={cn("p-1.5 rounded-lg transition-all", isSpeaking ? "text-primary bg-primary/5" : "text-muted-foreground/30 hover:text-foreground hover:bg-muted/50")} aria-label="Speak">
               {isSpeaking ? <VolumeX size={13} /> : <Volume2 size={13} />}
             </button>
           </div>
         )}
       </div>
       {isUser && (
-        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-foreground/[0.06] flex items-center justify-center mt-0.5 ring-1 ring-foreground/8">
-          <User size={13} className="text-muted-foreground" />
+        <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-foreground/[0.05] flex items-center justify-center mt-0.5 ring-1 ring-foreground/6">
+          <User size={13} className="text-muted-foreground/70" />
         </div>
       )}
     </div>

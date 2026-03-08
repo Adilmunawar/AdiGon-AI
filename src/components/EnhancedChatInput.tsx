@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Send, Paperclip, X, Mic, Code2, Sparkles, MicOff, ArrowUp, ChevronDown, Cpu, Globe } from "lucide-react";
+import { Paperclip, X, Mic, Code2, MicOff, ArrowUp, ChevronDown, Cpu, Globe } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -100,14 +100,14 @@ const EnhancedChatInput = ({
   const canSend = (input.trim() || attachedFiles.length > 0) && !isLoading;
 
   return (
-    <div className="bg-background/80 backdrop-blur-xl border-t border-border/40">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-3 pb-5">
+    <div className="glass border-t border-border/30">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-3 pb-4">
         
         {/* Attached Files */}
         {attachedFiles.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="mb-2.5 flex flex-wrap gap-2">
             {attachedFiles.map((file, index) => (
-              <div key={index} className="inline-flex items-center gap-2 bg-primary/[0.04] border border-primary/10 rounded-xl px-3 py-2 text-xs group animate-scale-in">
+              <div key={index} className="inline-flex items-center gap-2 bg-primary/[0.04] border border-primary/10 rounded-xl px-3 py-1.5 text-xs group animate-scale-in">
                 <Paperclip className="w-3 h-3 text-primary/60" />
                 <span className="text-foreground font-medium truncate max-w-32">{file.name}</span>
                 <button onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== index))} className="text-muted-foreground hover:text-destructive transition-colors">
@@ -123,8 +123,8 @@ const EnhancedChatInput = ({
           <div className={cn(
             "relative flex items-end rounded-2xl border transition-all duration-300",
             isFocused 
-              ? "border-primary/25 shadow-[0_0_0_3px_hsl(var(--primary)/0.04)] bg-card" 
-              : "border-border/60 bg-card/60 hover:border-border hover:bg-card/80"
+              ? "border-primary/20 shadow-[0_0_0_3px_hsl(var(--primary)/0.04),0_2px_12px_hsl(var(--primary)/0.06)] bg-card" 
+              : "border-border/50 bg-card/50 hover:border-border/80 hover:bg-card/70"
           )}>
             <Textarea
               ref={textareaRef}
@@ -136,15 +136,15 @@ const EnhancedChatInput = ({
               onKeyDown={handleKeyDown}
               placeholder="Ask anything..."
               disabled={isLoading}
-              className="flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[48px] max-h-[180px] leading-relaxed px-4 py-3.5 text-[15px]"
+              className="flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[48px] max-h-[180px] leading-relaxed px-4 py-3.5 text-[15px]"
               rows={1}
             />
-            <div className="flex items-center gap-1 pr-2.5 pb-2.5">
+            <div className="flex items-center gap-0.5 pr-2 pb-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
-                className="p-2 rounded-xl text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-all disabled:opacity-40"
+                className="p-2 rounded-xl text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50 transition-all disabled:opacity-40"
               >
                 <Paperclip className="w-4 h-4" />
               </button>
@@ -156,7 +156,7 @@ const EnhancedChatInput = ({
                   "p-2 rounded-xl transition-all disabled:opacity-40",
                   isRecording 
                     ? "text-destructive bg-destructive/8 animate-pulse" 
-                    : "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50"
+                    : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50"
                 )}
               >
                 {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
@@ -167,8 +167,8 @@ const EnhancedChatInput = ({
                 className={cn(
                   "p-2.5 rounded-xl transition-all duration-200 ml-0.5",
                   canSend 
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/25 hover:scale-105 active:scale-95" 
-                    : "bg-muted text-muted-foreground/30"
+                    ? "bg-primary text-primary-foreground hover:brightness-110 shadow-sm shadow-primary/15 hover:shadow-md hover:shadow-primary/20 active:scale-95" 
+                    : "bg-muted text-muted-foreground/25"
                 )}
               >
                 {isLoading 
@@ -187,18 +187,18 @@ const EnhancedChatInput = ({
         )}
 
         {/* Mode toggles + Model selector */}
-        <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
+        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap justify-center">
           {/* Model Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200 border border-border/50 hover:border-primary/15 hover:text-foreground bg-background text-muted-foreground">
-                <Cpu className="w-3 h-3" />
+              <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 border border-border/40 hover:border-primary/15 hover:bg-muted/50 bg-transparent text-muted-foreground">
+                <Cpu className="w-3 h-3 opacity-60" />
                 {currentModel.label}
                 <ChevronDown className="w-2.5 h-2.5 opacity-40" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-72 rounded-xl">
-              <DropdownMenuLabel className="text-[11px] text-muted-foreground font-medium">Select Model</DropdownMenuLabel>
+            <DropdownMenuContent align="center" className="w-72 rounded-xl p-1.5">
+              <DropdownMenuLabel className="text-[10px] text-muted-foreground/60 font-semibold uppercase tracking-wider px-2">Model</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {GEMINI_MODELS.map((model) => (
                 <DropdownMenuItem
@@ -210,15 +210,11 @@ const EnhancedChatInput = ({
                   )}
                 >
                   <div className="flex items-center gap-2 w-full">
-                    <span className={cn("text-sm font-medium", selectedModel === model.id ? "text-primary" : "text-foreground")}>
-                      {model.label}
-                    </span>
+                    <span className={cn("text-sm font-medium", selectedModel === model.id ? "text-primary" : "text-foreground")}>{model.label}</span>
                     {model.badge && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/8 text-primary font-medium">{model.badge}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/8 text-primary font-semibold">{model.badge}</span>
                     )}
-                    {selectedModel === model.id && (
-                      <span className="ml-auto text-primary text-xs">✓</span>
-                    )}
+                    {selectedModel === model.id && <span className="ml-auto text-primary text-xs">✓</span>}
                   </div>
                   <span className="text-[11px] text-muted-foreground">{model.description}</span>
                 </DropdownMenuItem>
@@ -226,15 +222,15 @@ const EnhancedChatInput = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="h-3 w-px bg-border/50" />
+          <div className="h-3 w-px bg-border/30" />
 
           <button
             onClick={() => setIsCoderMode(!isCoderMode)}
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200 border",
+              "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 border",
               isCoderMode 
                 ? "bg-primary/8 text-primary border-primary/15 shadow-sm shadow-primary/5" 
-                : "bg-transparent text-muted-foreground border-border/50 hover:border-primary/15 hover:text-foreground"
+                : "bg-transparent text-muted-foreground border-border/40 hover:border-primary/15 hover:bg-muted/50"
             )}
           >
             <Code2 className="w-3 h-3" />
@@ -243,10 +239,10 @@ const EnhancedChatInput = ({
           <button
             onClick={() => setIsDeepSearchMode(!isDeepSearchMode)}
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-200 border",
+              "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 border",
               isDeepSearchMode 
                 ? "bg-accent/8 text-accent border-accent/15 shadow-sm shadow-accent/5" 
-                : "bg-transparent text-muted-foreground border-border/50 hover:border-accent/15 hover:text-foreground"
+                : "bg-transparent text-muted-foreground border-border/40 hover:border-accent/15 hover:bg-muted/50"
             )}
           >
             <Globe className="w-3 h-3" />
@@ -256,7 +252,7 @@ const EnhancedChatInput = ({
 
         <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} className="hidden" accept="image/*,.txt,.md,.json,.js,.ts,.tsx,.css,.html,.pdf,.doc,.docx" />
         
-        <p className="text-[10px] text-muted-foreground/40 text-center mt-2">
+        <p className="text-[10px] text-muted-foreground/30 text-center mt-2 font-medium">
           AdiGon AI can make mistakes · Powered by Google Gemini
         </p>
       </div>
