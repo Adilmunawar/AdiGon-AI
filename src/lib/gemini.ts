@@ -4,7 +4,7 @@ const API_KEY = "AIzaSyBnZCzRjQRc3wDgGDdC1kCLwcbGJRYuyMc";
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash-latest",
+  model: "gemini-2.5-flash-preview-05-20",
 });
 
 const getGenerationConfig = (responseLength: string = 'adaptive', codeDetailLevel: string = 'comprehensive') => {
