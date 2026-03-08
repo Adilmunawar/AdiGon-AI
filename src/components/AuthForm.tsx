@@ -225,7 +225,7 @@ export default function AuthForm() {
         </form>
       </Form>
 
-      <div className="mt-8">
+      <div className="mt-4">
         <DeveloperCredit />
       </div>
     </div>
