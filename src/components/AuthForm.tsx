@@ -10,11 +10,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import { LoaderCircle, Eye, EyeOff, AlertCircle, CheckCircle, Bot, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff, AlertCircle, CheckCircle, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import DeveloperCredit from "./DeveloperCredit";
 import { cn } from "@/lib/utils";
+import adigonLogo from "@/assets/adigon-logo.png";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -46,8 +47,8 @@ export default function AuthForm() {
 
   const handleAuthError = (error: any) => {
     const msg = error?.message || 'An unexpected error occurred';
-    if (msg.includes('Invalid login credentials')) return 'Invalid email or password. Please try again.';
-    if (msg.includes('Email not confirmed')) return 'Please check your inbox and confirm your email.';
+    if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';
+    if (msg.includes('Email not confirmed')) return 'Please check your inbox and confirm your email first.';
     if (msg.includes('User already registered')) return 'This account already exists. Try signing in.';
     if (msg.includes('Too many requests')) return 'Too many attempts. Please wait a moment.';
     return msg;
@@ -62,7 +63,7 @@ export default function AuthForm() {
       if (isSignIn) {
         const { data, error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.password });
         if (error) { setAuthError(handleAuthError(error)); return; }
-        if (data.user) { setAuthSuccess('Welcome back!'); toast.success("Signed in!"); form.reset(); }
+        if (data.user) { setAuthSuccess('Welcome back!'); toast.success("Signed in successfully!"); form.reset(); }
       } else {
         if (!values.name?.trim()) { setAuthError('Please enter your name.'); return; }
         if (!values.gender) { setAuthError('Please select your gender.'); return; }
@@ -72,7 +73,7 @@ export default function AuthForm() {
         });
         if (error) { setAuthError(handleAuthError(error)); return; }
         if (data.user) {
-          setAuthSuccess(data.user.email_confirmed_at ? 'Account created successfully!' : 'Check your email to confirm your account.');
+          setAuthSuccess(data.user.email_confirmed_at ? 'Account created!' : 'Check your email to confirm your account.');
           toast.success("Account created!");
           form.reset();
           setTimeout(() => { setIsSignIn(true); setAuthSuccess(null); }, 3000);
@@ -83,23 +84,45 @@ export default function AuthForm() {
 
   return (
     <div className="w-full">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2.5 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-primary" />
-          </div>
-          <span className="text-base font-semibold text-foreground tracking-tight">AdiGon AI</span>
-        </div>
-        
-        <h1 className="text-[28px] font-bold tracking-tight text-foreground mb-2 leading-tight">
-          {isSignIn ? "Welcome back" : "Create your account"}
+      {/* Mobile-only logo */}
+      <div className="flex items-center gap-2.5 mb-8 lg:hidden">
+        <img src={adigonLogo} alt="AdiGon AI" className="w-9 h-9" />
+        <span className="text-base font-bold text-foreground tracking-tight">AdiGon AI</span>
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex bg-muted/50 rounded-xl p-1 mb-8">
+        <button
+          onClick={() => { if (!isSignIn) toggleFormType(); }}
+          className={cn(
+            "flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+            isSignIn
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Sign In
+        </button>
+        <button
+          onClick={() => { if (isSignIn) toggleFormType(); }}
+          className={cn(
+            "flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+            !isSignIn
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Create Account
+        </button>
+      </div>
+
+      {/* Header text */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1.5">
+          {isSignIn ? "Welcome back" : "Get started"}
         </h1>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {isSignIn 
-            ? "Enter your credentials to access your account" 
-            : "Start your journey with AdiGon AI today"
-          }
+        <p className="text-sm text-muted-foreground">
+          {isSignIn ? "Enter your credentials to continue" : "Create your free account to begin"}
         </p>
       </div>
 
@@ -127,12 +150,7 @@ export default function AuthForm() {
                 <FormControl>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                    <Input 
-                      placeholder="John Doe" 
-                      {...field} 
-                      disabled={isSubmitting} 
-                      className="pl-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
-                    />
+                    <Input placeholder="John Doe" {...field} disabled={isSubmitting} className="pl-11 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -146,14 +164,7 @@ export default function AuthForm() {
               <FormControl>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                  <Input 
-                    type="email" 
-                    placeholder="you@example.com" 
-                    {...field} 
-                    disabled={isSubmitting} 
-                    autoComplete="email" 
-                    className="pl-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
-                  />
+                  <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} autoComplete="email" className="pl-11 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -166,18 +177,8 @@ export default function AuthForm() {
               <FormControl>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                  <Input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    {...field} 
-                    disabled={isSubmitting} 
-                    className="pl-11 pr-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)} 
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                  >
+                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-11 pr-12 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors">
                     {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                   </button>
                 </div>
@@ -192,7 +193,7 @@ export default function AuthForm() {
                 <FormLabel className="text-[13px] font-medium text-foreground/80">Gender</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl>
-                    <SelectTrigger className="h-11 bg-background border-border/80 rounded-xl text-[15px]">
+                    <SelectTrigger className="h-12 bg-background border-border/80 rounded-xl text-[15px]">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
@@ -208,10 +209,10 @@ export default function AuthForm() {
             )} />
           )}
 
-          <div className="pt-1">
+          <div className="pt-2">
             <Button 
               type="submit" 
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl text-[15px] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-primary/10 group" 
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-[15px] transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-primary/15 group" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -223,27 +224,6 @@ export default function AuthForm() {
           </div>
         </form>
       </Form>
-
-      {/* Divider */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border/60" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-background px-3 text-xs text-muted-foreground/60">
-            {isSignIn ? "New to AdiGon AI?" : "Already have an account?"}
-          </span>
-        </div>
-      </div>
-
-      {/* Toggle */}
-      <button 
-        onClick={toggleFormType} 
-        disabled={isSubmitting} 
-        className="w-full h-11 rounded-xl border border-border/80 bg-background text-sm font-medium text-foreground hover:bg-card hover:border-primary/20 transition-all duration-200"
-      >
-        {isSignIn ? "Create a free account" : "Sign in instead"}
-      </button>
 
       <div className="mt-8">
         <DeveloperCredit />
