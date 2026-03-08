@@ -25,6 +25,7 @@ export interface Message {
 interface ChatMessageProps {
   message: Message;
   onReviewCode?: (code: string) => void;
+  isStreaming?: boolean;
 }
 
 const UserMessageContent = ({ text }: { text: string }) => {
@@ -50,7 +51,11 @@ const UserMessageContent = ({ text }: { text: string }) => {
   );
 };
 
-const ChatMessage = ({ message, onReviewCode }: ChatMessageProps) => {
+const StreamingCursor = () => (
+  <span className="inline-block w-[2px] h-[1.1em] bg-primary/70 ml-0.5 align-middle animate-pulse" />
+);
+
+const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessageProps) => {
   const isUser = message.role === "user";
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -140,6 +145,7 @@ const ChatMessage = ({ message, onReviewCode }: ChatMessageProps) => {
           ) : (
             <div className="prose-sm max-w-none">
               <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
+              {isStreaming && <StreamingCursor />}
             </div>
           )}
           {message.imageUrl && (
@@ -147,7 +153,7 @@ const ChatMessage = ({ message, onReviewCode }: ChatMessageProps) => {
               <img src={message.imageUrl} alt="Content" className="w-full h-auto max-w-md rounded-xl" style={{ maxHeight: '400px', objectFit: 'contain' }} />
             </div>
           )}
-          {!isUser && message.code && onReviewCode && (
+          {!isUser && !isStreaming && message.code && onReviewCode && (
             <div className="mt-3">
               <Button variant="outline" size="sm" onClick={() => onReviewCode(message.code!)} className="text-xs h-8 rounded-lg border-border text-muted-foreground hover:text-primary hover:border-primary/30">
                 <Code className="mr-1.5 h-3 w-3" /> Review in Canvas
@@ -157,7 +163,7 @@ const ChatMessage = ({ message, onReviewCode }: ChatMessageProps) => {
         </div>
         
         {/* Actions */}
-        {!isUser && (
+        {!isUser && !isStreaming && (
           <div className="flex gap-0.5 mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <button onClick={handleCopy} className="p-1.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/60 transition-all" aria-label="Copy">
               {copied ? <Check size={13} className="text-primary" /> : <Copy size={13} />}

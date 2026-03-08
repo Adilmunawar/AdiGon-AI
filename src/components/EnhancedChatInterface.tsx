@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface EnhancedChatInterfaceProps {
   messages: Message[];
   isLoading: boolean;
+  isStreaming?: boolean;
   loadingMessage: string;
   examplePrompts: Array<{ text: string; icon: any }>;
   handleSendMessage: (prompt: string) => void;
@@ -20,6 +21,7 @@ interface EnhancedChatInterfaceProps {
 const EnhancedChatInterface = ({
   messages,
   isLoading,
+  isStreaming = false,
   loadingMessage,
   examplePrompts,
   handleSendMessage,
@@ -36,15 +38,22 @@ const EnhancedChatInterface = ({
         
         {/* Messages */}
         <div className="space-y-1">
-          {messages.map((msg, index) => (
-            <div 
-              key={index} 
-              className="animate-fade-in-up" 
-              style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
-            >
-              <ChatMessage message={msg} onReviewCode={onReviewCode} />
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            const isLastModel = msg.role === 'model' && index === messages.length - 1;
+            return (
+              <div 
+                key={index} 
+                className="animate-fade-in-up" 
+                style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+              >
+                <ChatMessage 
+                  message={msg} 
+                  onReviewCode={onReviewCode} 
+                  isStreaming={isLastModel && isStreaming}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Loading indicator */}
