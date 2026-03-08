@@ -1,72 +1,26 @@
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const API_KEYS = [
-  'AIzaSyBnZCzRjQRc3wDgGDdC1kCLwcbGJRYuyMc',
-  'AIzaSyC_cnrlsxeIx7i3MjIe5rl9QFbyk0qKlgA',
-  'AIzaSyDkCxExhTKwUAASINusHXMAFDZAhsLhC40',
-  'AIzaSyCrosJpaddyi6Upxj0bnApPT-spZUh2yMs',
-  'AIzaSyBa2T4Kb2Mty6vSdoQ9NKDPCCNb6SIbFjk'
-];
+import { supabase } from '@/integrations/supabase/client';
 
 class GeminiService {
-  private clients: GoogleGenerativeAI[];
-  private currentKeyIndex: number = 0;
-  
-  constructor() {
-    this.clients = API_KEYS.map(key => new GoogleGenerativeAI(key));
-  }
-  
-  private getNextClient(): GoogleGenerativeAI {
-    const client = this.clients[this.currentKeyIndex];
-    this.currentKeyIndex = (this.currentKeyIndex + 1) % this.clients.length;
-    return client;
-  }
-  
   async generateResponse(
-    prompt: string, 
+    prompt: string,
     systemPrompt: string = "You are AdiGon AI, a helpful and creative assistant.",
     fileData?: any,
     modelId: string = "gemini-2.5-flash-preview-05-20"
   ): Promise<string> {
-    const maxRetries = API_KEYS.length;
-    let attempt = 0;
-    
-    while (attempt < maxRetries) {
-      try {
-        const client = this.getNextClient();
-        const model = client.getGenerativeModel({ 
-          model: modelId,
-          systemInstruction: systemPrompt
-        });
-        
-        let result;
-        if (fileData?.file) {
-          const imagePart = {
-            inlineData: {
-              data: fileData.base64,
-              mimeType: fileData.file.type
-            }
-          };
-          result = await model.generateContent([prompt, imagePart]);
-        } else {
-          result = await model.generateContent(prompt);
-        }
-        
-        return result.response.text();
-      } catch (error) {
-        console.warn(`API key ${attempt + 1} failed, trying next...`, error);
-        attempt++;
-        
-        if (attempt >= maxRetries) {
-          throw new Error('All API keys exhausted. Please try again later.');
-        }
-      }
+    const body: any = { prompt, systemPrompt, model: modelId, stream: false };
+
+    if (fileData?.base64) {
+      body.fileData = { base64: fileData.base64, mimeType: fileData.file?.type || 'image/png' };
     }
-    
-    throw new Error('Failed to generate response');
+
+    const { data, error } = await supabase.functions.invoke('gemini-chat', { body });
+
+    if (error) throw new Error(error.message || 'Failed to generate response');
+    if (data?.error) throw new Error(data.error);
+    return data?.text || '';
   }
-  
+
   async generateStreamingResponse(
     prompt: string,
     systemPrompt: string = "You are AdiGon AI, a helpful and creative assistant.",
@@ -74,49 +28,84 @@ class GeminiService {
     fileData?: any,
     modelId: string = "gemini-2.5-flash-preview-05-20"
   ): Promise<string> {
-    const maxRetries = API_KEYS.length;
-    let attempt = 0;
-    
-    while (attempt < maxRetries) {
-      try {
-        const client = this.getNextClient();
-        const model = client.getGenerativeModel({ 
-          model: modelId,
-          systemInstruction: systemPrompt
-        });
-        
-        let result;
-        if (fileData?.file) {
-          const imagePart = {
-            inlineData: {
-              data: fileData.base64,
-              mimeType: fileData.file.type
-            }
-          };
-          result = await model.generateContentStream([prompt, imagePart]);
-        } else {
-          result = await model.generateContentStream(prompt);
-        }
-        
-        let fullResponse = '';
-        for await (const chunk of result.stream) {
-          const chunkText = chunk.text();
-          fullResponse += chunkText;
-          onChunk(chunkText, fullResponse);
-        }
-        
-        return fullResponse;
-      } catch (error) {
-        console.warn(`Streaming API key ${attempt + 1} failed, trying next...`, error);
-        attempt++;
-        
-        if (attempt >= maxRetries) {
-          throw new Error('All API keys exhausted. Please try again later.');
+    const body: any = { prompt, systemPrompt, model: modelId, stream: true };
+
+    if (fileData?.base64) {
+      body.fileData = { base64: fileData.base64, mimeType: fileData.file?.type || 'image/png' };
+    }
+
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-chat`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Streaming request failed');
+    }
+
+    if (!response.body) {
+      throw new Error('No response body for streaming');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      let newlineIndex: number;
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        let line = buffer.slice(0, newlineIndex);
+        buffer = buffer.slice(newlineIndex + 1);
+
+        if (line.endsWith('\r')) line = line.slice(0, -1);
+        if (!line.startsWith('data: ')) continue;
+
+        const jsonStr = line.slice(6).trim();
+        if (jsonStr === '[DONE]') break;
+
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            fullResponse += text;
+            onChunk(text, fullResponse);
+          }
+        } catch {
+          // partial JSON, wait for more data
         }
       }
     }
-    
-    throw new Error('Failed to generate streaming response');
+
+    // Flush remaining buffer
+    if (buffer.trim()) {
+      for (let raw of buffer.split('\n')) {
+        if (!raw || !raw.startsWith('data: ')) continue;
+        const jsonStr = raw.slice(6).trim();
+        if (jsonStr === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            fullResponse += text;
+            onChunk(text, fullResponse);
+          }
+        } catch { /* ignore */ }
+      }
+    }
+
+    return fullResponse;
   }
 }
 
