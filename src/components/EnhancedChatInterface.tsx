@@ -17,6 +17,8 @@ interface EnhancedChatInterfaceProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
   showScrollButton: boolean;
   scrollToBottom: () => void;
+  onRegenerate?: () => void;
+  onEditMessage?: (newText: string) => void;
 }
 
 const EnhancedChatInterface = ({
