@@ -60,10 +60,13 @@ const StreamingCursor = () => (
   <span className="inline-block w-[2px] h-[1.1em] bg-primary ml-0.5 align-middle animate-pulse" />
 );
 
-const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessageProps) => {
+const ChatMessage = ({ message, onReviewCode, isStreaming = false, onRegenerate, onEditMessage, isLastUserMessage = false, isLastModelMessage = false }: ChatMessageProps) => {
   const isUser = message.role === "user";
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState('');
   const messageText = message.parts.map((part) => part.text).join("\n");
 
   const handleCopy = () => {
