@@ -209,10 +209,10 @@ export default function AuthForm() {
             )} />
           )}
 
-          <div className="pt-2">
+          <div className="pt-1">
             <Button 
               type="submit" 
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-[15px] transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-primary/15 group" 
+              className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-primary/15 group" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (
