@@ -17,6 +17,13 @@ import { FileUploadResult } from '@/services/uploadService';
 import { GeneratedCode } from '@/services/advancedCodeGenerator';
 import { parseContent } from '@/components/CodeBlock';
 import adigonLogo from '@/assets/adigon-logo.png';
+import { exportAsMarkdown, exportAsPDF } from '@/utils/exportConversation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const loadingMessages = [
   "Thinking...",
