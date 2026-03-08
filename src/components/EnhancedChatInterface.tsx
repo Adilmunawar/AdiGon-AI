@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Bot, LoaderCircle, ArrowDown, Sparkles } from 'lucide-react';
+import { Bot, LoaderCircle, ArrowDown, Sparkles, Code, Brain, Search, MessageSquare } from 'lucide-react';
 import ChatMessage, { Message } from '@/components/ChatMessage';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -31,63 +31,72 @@ const EnhancedChatInterface = ({
   const isMobile = useIsMobile();
 
   return (
-    <main className="flex-1 overflow-y-auto relative bg-background">
-      <div className={`mx-auto space-y-4 sm:space-y-6 p-4 sm:p-6 ${isMobile ? 'max-w-full' : 'max-w-4xl'}`}>
-        {messages.map((msg, index) => (
-          <div 
-            key={index} 
-            className="animate-fade-in-up" 
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            <ChatMessage message={msg} onReviewCode={onReviewCode} />
-          </div>
-        ))}
-
-        {isLoading && (
-          <div className="group flex animate-fade-in-up items-start gap-3 sm:gap-4 py-4">
-            <div className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary ring-2 ring-primary/20 animate-pulse">
-              <Bot size={isMobile ? 18 : 20} />
+    <main className="flex-1 overflow-y-auto relative">
+      <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-6 ${isMobile ? 'max-w-full' : 'max-w-3xl'}`}>
+        
+        {/* Messages */}
+        <div className="space-y-1">
+          {messages.map((msg, index) => (
+            <div 
+              key={index} 
+              className="animate-fade-in-up" 
+              style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+            >
+              <ChatMessage message={msg} onReviewCode={onReviewCode} />
             </div>
-            <div className="rounded-2xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base shadow-sm transition-all duration-500 border border-border bg-card text-card-foreground flex items-center max-w-full">
-              <LoaderCircle size={isMobile ? 16 : 18} className="animate-spin mr-3 text-primary flex-shrink-0" />
-              <p className="text-sm break-words text-muted-foreground">{loadingMessage}</p>
+          ))}
+        </div>
+
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex items-start gap-3 py-6 animate-fade-in">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/8 flex items-center justify-center">
+              <Bot size={16} className="text-primary" />
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/60" style={{ animation: 'typing-dot 1.4s ease-in-out infinite' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/60" style={{ animation: 'typing-dot 1.4s ease-in-out 0.2s infinite' }} />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/60" style={{ animation: 'typing-dot 1.4s ease-in-out 0.4s infinite' }} />
+              </div>
+              <span className="text-sm text-muted-foreground">{loadingMessage}</span>
             </div>
           </div>
         )}
 
+        {/* Empty state / Welcome */}
         {messages.length === 0 && !isLoading && (
-          <div className="py-8 sm:py-12 text-center animate-fade-in-up">
-            <div className="mb-8 sm:mb-10">
-              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-3xl flex items-center justify-center mb-6">
-                <Bot size={40} className="text-primary" />
+          <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in-up">
+            {/* Hero */}
+            <div className="text-center mb-12 max-w-lg">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/8 mb-6">
+                <Sparkles size={24} className="text-primary" />
               </div>
+              <h1 className={`font-semibold tracking-tight text-foreground mb-3 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
+                What can I help with?
+              </h1>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Ask me anything — code, research, creative ideas, or just a conversation.
+              </p>
             </div>
-            <h2 className={`font-bold text-foreground mb-3 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>
-              Welcome to <span className="text-primary">AdiGon AI</span>
-            </h2>
-            <p className={`text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4 ${isMobile ? 'text-base' : 'text-lg'}`}>
-              Your intelligent companion for creative tasks, coding, and conversations. What would you like to explore today?
-            </p>
-            <div className={`grid gap-3 sm:gap-4 max-w-4xl mx-auto px-4 ${
-              isMobile 
-                ? 'grid-cols-1 sm:grid-cols-2' 
-                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+
+            {/* Prompt suggestions */}
+            <div className={`grid gap-2.5 w-full max-w-2xl ${
+              isMobile ? 'grid-cols-1' : 'grid-cols-2'
             }`}>
-              {examplePrompts.map((prompt, index) => {
+              {examplePrompts.slice(0, 4).map((prompt, index) => {
                 const Icon = prompt.icon;
                 return (
                   <button 
                     key={prompt.text}
                     onClick={() => handleSendMessage(prompt.text)}
-                    className={`group bg-card border border-border rounded-xl hover:bg-primary/5 hover:border-primary/30 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg flex flex-col items-center text-center gap-3 sm:gap-4 animate-fade-in-up ${
-                      isMobile ? 'p-4' : 'p-6'
-                    }`}
-                    style={{ animationDelay: `${index * 100}ms` }}
+                    className="group flex items-start gap-3 p-4 rounded-xl border border-border bg-background hover:bg-card hover:border-primary/20 transition-all duration-200 text-left animate-fade-in-up"
+                    style={{ animationDelay: `${150 + index * 75}ms` }}
                   >
-                    <div className={`bg-primary/10 rounded-full text-primary group-hover:bg-primary/20 transition-all duration-300 ${isMobile ? 'p-3' : 'p-4'}`}>
-                      <Icon size={isMobile ? 20 : 24} className="transition-transform duration-300 group-hover:scale-110" />
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/6 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <Icon size={15} className="text-primary/70 group-hover:text-primary transition-colors" />
                     </div>
-                    <span className={`font-medium text-foreground group-hover:text-primary transition-colors duration-300 ${isMobile ? 'text-xs leading-tight' : 'text-sm'}`}>
+                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors leading-snug line-clamp-2">
                       {prompt.text}
                     </span>
                   </button>
@@ -97,20 +106,22 @@ const EnhancedChatInterface = ({
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="h-4" />
       </div>
 
+      {/* Scroll to bottom */}
       {showScrollButton && (
-        <Button
-          onClick={scrollToBottom}
-          size="icon"
-          className={`fixed bottom-20 sm:bottom-24 right-4 sm:right-8 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 z-10 animate-fade-in-up ${
-            isMobile ? 'h-11 w-11' : 'h-12 w-12'
-          }`}
-          aria-label="Scroll to bottom"
-        >
-          <ArrowDown size={isMobile ? 18 : 20} />
-        </Button>
+        <div className="sticky bottom-4 flex justify-center pointer-events-none">
+          <Button
+            onClick={scrollToBottom}
+            size="icon"
+            variant="outline"
+            className="pointer-events-auto h-8 w-8 rounded-full bg-background/90 backdrop-blur border-border shadow-lg hover:shadow-xl transition-all animate-fade-in"
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown size={14} />
+          </Button>
+        </div>
       )}
     </main>
   );

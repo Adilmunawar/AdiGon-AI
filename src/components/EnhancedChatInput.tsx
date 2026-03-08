@@ -1,12 +1,10 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Send, Paperclip, X, Mic, Code2, Sparkles, MicOff } from "lucide-react";
+import { Send, Paperclip, X, Mic, Code2, Sparkles, MicOff, ArrowUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { FileUploadResult, uploadService } from '@/services/uploadService';
@@ -37,7 +35,7 @@ const EnhancedChatInput = ({
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = 'auto';
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
     }
   }, []);
 
@@ -57,7 +55,7 @@ const EnhancedChatInput = ({
     for (const file of files) {
       try {
         const result = await uploadService.processFile(file);
-        if (result.success) { setAttachedFiles(prev => [...prev, result]); toast.success(`File "${file.name}" attached!`); }
+        if (result.success) { setAttachedFiles(prev => [...prev, result]); toast.success(`Attached "${file.name}"`); }
         else toast.error(`Failed: ${result.error}`);
       } catch { toast.error(`Failed to attach "${file.name}"`); }
     }
@@ -75,96 +73,126 @@ const EnhancedChatInput = ({
     }
   };
 
+  const canSend = (input.trim() || attachedFiles.length > 0) && !isLoading;
+
   return (
-    <div className="relative border-t border-border bg-background">
-      <div className="relative container mx-auto px-4 py-4 max-w-4xl">
-        {/* Mode Controls */}
-        <div className="flex items-center justify-center gap-6 mb-4">
-          <div className="flex items-center gap-2">
-            <Switch checked={isCoderMode} onCheckedChange={setIsCoderMode} className="data-[state=checked]:bg-primary" />
-            <Badge variant={isCoderMode ? "default" : "secondary"} className={cn("gap-1.5 px-3 py-1 text-xs font-medium transition-all", isCoderMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-              <Code2 className="w-3 h-3" /> Developer Mode
-            </Badge>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch checked={isDeepSearchMode} onCheckedChange={setIsDeepSearchMode} className="data-[state=checked]:bg-accent" />
-            <Badge variant={isDeepSearchMode ? "default" : "secondary"} className={cn("gap-1.5 px-3 py-1 text-xs font-medium transition-all", isDeepSearchMode ? 'bg-accent text-accent-foreground' : 'bg-muted text-muted-foreground')}>
-              <Sparkles className="w-3 h-3" /> Deep Search
-            </Badge>
-          </div>
+    <div className="border-t border-border/60 bg-background">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-3 pb-4">
+        
+        {/* Mode toggles */}
+        <div className="flex items-center gap-4 mb-3">
+          <button
+            onClick={() => setIsCoderMode(!isCoderMode)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+              isCoderMode 
+                ? "bg-primary/8 text-primary border-primary/20" 
+                : "bg-transparent text-muted-foreground border-border hover:border-primary/20 hover:text-foreground"
+            )}
+          >
+            <Code2 className="w-3 h-3" />
+            Developer
+          </button>
+          <button
+            onClick={() => setIsDeepSearchMode(!isDeepSearchMode)}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+              isDeepSearchMode 
+                ? "bg-accent/8 text-accent border-accent/20" 
+                : "bg-transparent text-muted-foreground border-border hover:border-accent/20 hover:text-foreground"
+            )}
+          >
+            <Sparkles className="w-3 h-3" />
+            Deep Search
+          </button>
         </div>
 
         {/* Attached Files */}
         {attachedFiles.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
+          <div className="mb-2.5 flex flex-wrap gap-2">
             {attachedFiles.map((file, index) => (
-              <div key={index} className="inline-flex items-center gap-2 bg-muted border border-border rounded-xl px-3 py-2 text-sm">
-                <Paperclip className="w-4 h-4 text-primary" />
+              <div key={index} className="inline-flex items-center gap-2 bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs">
+                <Paperclip className="w-3 h-3 text-muted-foreground" />
                 <span className="text-foreground truncate max-w-32">{file.name}</span>
-                <Button variant="ghost" size="icon" onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== index))} className="h-6 w-6 rounded-lg hover:bg-destructive/10 hover:text-destructive">
+                <button onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== index))} className="text-muted-foreground hover:text-destructive transition-colors">
                   <X className="w-3 h-3" />
-                </Button>
+                </button>
               </div>
             ))}
           </div>
         )}
 
-        {/* Main Input */}
-        <form onSubmit={handleSubmit} className="relative">
+        {/* Input area */}
+        <form onSubmit={handleSubmit}>
           <div className={cn(
-            "relative flex items-end gap-2 bg-card border rounded-2xl shadow-sm transition-all duration-300 overflow-hidden",
-            isFocused ? "border-primary shadow-md" : "border-border hover:border-muted-foreground/30"
+            "relative flex items-end rounded-2xl border bg-card transition-all duration-200",
+            isFocused ? "border-primary/30 shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" : "border-border hover:border-border"
           )}>
-            <div className="flex-1 relative min-w-0">
-              <Textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                onPaste={handlePaste}
-                onKeyDown={handleKeyDown}
-                placeholder="Message AdiGon AI..."
+            <Textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onPaste={handlePaste}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask anything..."
+              disabled={isLoading}
+              className="flex-1 border-0 bg-transparent text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[44px] max-h-[180px] leading-relaxed px-4 py-3 text-[15px]"
+              rows={1}
+            />
+            <div className="flex items-center gap-0.5 pr-2 pb-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
                 disabled={isLoading}
-                className="border-0 bg-transparent text-foreground placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0 resize-none min-h-[48px] max-h-[120px] leading-relaxed px-4 py-3 text-sm"
-                rows={1}
-              />
-            </div>
-            <div className="flex items-center gap-1 pr-2 pb-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button type="button" size="icon" variant="ghost" onClick={() => fileInputRef.current?.click()} className="h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground" disabled={isLoading}>
-                      <Paperclip className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Attach file</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button type="button" size="icon" variant="ghost" onClick={() => setIsRecording(!isRecording)} className={cn("h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground", isRecording && "text-destructive hover:text-destructive")} disabled={isLoading}>
-                      {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Voice input</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Button type="submit" size="icon" disabled={(!input.trim() && attachedFiles.length === 0) || isLoading} className="h-8 w-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105 shadow-sm disabled:opacity-50 ml-1">
-                {isLoading ? <div className="w-3 h-3 border border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" /> : <Send className="w-4 h-4" />}
-              </Button>
+                className="p-2 rounded-lg text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/60 transition-all disabled:opacity-40"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsRecording(!isRecording)}
+                disabled={isLoading}
+                className={cn(
+                  "p-2 rounded-lg transition-all disabled:opacity-40",
+                  isRecording 
+                    ? "text-destructive bg-destructive/8" 
+                    : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/60"
+                )}
+              >
+                {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+              <button
+                type="submit"
+                disabled={!canSend}
+                className={cn(
+                  "p-2 rounded-xl transition-all duration-200 ml-0.5",
+                  canSend 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm" 
+                    : "bg-muted text-muted-foreground/40"
+                )}
+              >
+                {isLoading 
+                  ? <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  : <ArrowUp className="w-4 h-4" />
+                }
+              </button>
             </div>
           </div>
         </form>
 
         {isRecording && (
-          <div className="mt-3">
+          <div className="mt-2">
             <VoiceRecorder onResult={(t) => { setInput(input + (input ? ' ' : '') + t); setIsRecording(false); }} onStop={() => setIsRecording(false)} />
           </div>
         )}
 
         <input ref={fileInputRef} type="file" multiple onChange={handleFileChange} className="hidden" accept="image/*,.txt,.md,.json,.js,.ts,.tsx,.css,.html,.pdf,.doc,.docx" />
+        
+        <p className="text-[11px] text-muted-foreground/50 text-center mt-2.5">
+          AdiGon AI can make mistakes. Verify important information.
+        </p>
       </div>
     </div>
   );
