@@ -337,6 +337,30 @@ Always provide fully functional implementations.`;
                   {userProfile.name.split(' ')[0]}
                 </span>
               )}
+              {messages.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-[11px] rounded-lg border-border/40 text-muted-foreground/60 hover:text-primary hover:border-primary/20 gap-1.5 transition-all font-medium"
+                    >
+                      <Download className="w-3 h-3" />
+                      Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[140px]">
+                    <DropdownMenuItem onClick={() => exportAsMarkdown(messages, conversations.find(c => c.id === activeConversationId)?.title)} className="text-xs gap-2">
+                      <FileText className="w-3.5 h-3.5" />
+                      Markdown (.md)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportAsPDF(messages, conversations.find(c => c.id === activeConversationId)?.title)} className="text-xs gap-2">
+                      <FileText className="w-3.5 h-3.5" />
+                      Print / PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <Button
                 onClick={() => setIsAdvancedCanvasOpen(true)}
                 variant="outline"
