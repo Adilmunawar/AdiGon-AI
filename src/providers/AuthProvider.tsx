@@ -30,23 +30,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Initialize auth state
   useEffect(() => {
-    console.log('🔄 Initializing auth state...');
-    
     let isMounted = true;
 
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log(`🔔 Auth event: ${event}`);
+        
+        if (isMounted) {
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          setLoading(false);
+          setInitialized(true);
+
+          // Handle sign out navigation immediately
+          if (event === 'SIGNED_OUT') {
+            navigate('/auth', { replace: true });
+          } else if (event === 'SIGNED_IN' && location.pathname === '/auth') {
+            navigate('/', { replace: true });
+          }
+        }
+      }
+    );
+
+    // Then get initial session
     const initializeAuth = async () => {
       try {
-        // Get current session
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('❌ Error getting session:', error);
-        } else {
-          console.log('✅ Current session:', currentSession ? 'Found' : 'None');
-        }
-
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         if (isMounted) {
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
@@ -54,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setInitialized(true);
         }
       } catch (error) {
-        console.error('❌ Auth initialization error:', error);
+        console.error('Auth init error:', error);
         if (isMounted) {
           setLoading(false);
           setInitialized(true);
@@ -62,80 +73,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
-        console.log(`🔔 Auth event: ${event}`, newSession ? 'Session exists' : 'No session');
-        
-        if (isMounted) {
-          setSession(newSession);
-          setUser(newSession?.user ?? null);
-          
-          // Only set loading to false after we've processed the auth change
-          if (initialized) {
-            setLoading(false);
-          }
-        }
-      }
-    );
-
     initializeAuth();
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [initialized]);
+  }, []);
 
-  // Handle navigation after auth state is established
+  // Handle navigation for initial load
   useEffect(() => {
-    if (!initialized || loading) {
-      return;
-    }
+    if (!initialized || loading) return;
 
     const currentPath = location.pathname;
-    console.log(`🧭 Navigation check - Path: ${currentPath}, Session: ${session ? 'Yes' : 'No'}`);
-
-    // Use a small delay to ensure all auth state updates are complete
-    const navigationTimer = setTimeout(() => {
-      if (session && currentPath === '/auth') {
-        console.log('🏠 Redirecting authenticated user to home');
-        navigate('/', { replace: true });
-      } else if (!session && currentPath !== '/auth') {
-        console.log('🔐 Redirecting unauthenticated user to auth');
-        navigate('/auth', { replace: true });
-      }
-    }, 100);
-
-    return () => clearTimeout(navigationTimer);
-  }, [session, initialized, loading, location.pathname, navigate]);
+    if (session && currentPath === '/auth') {
+      navigate('/', { replace: true });
+    } else if (!session && currentPath !== '/auth') {
+      navigate('/auth', { replace: true });
+    }
+  }, [session, initialized, loading]);
 
   const signOut = async () => {
-    console.log('🚪 Signing out...');
-    setLoading(true);
-    
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('❌ Sign out error:', error);
-        throw error;
-      }
-      console.log('✅ Sign out successful');
+      await supabase.auth.signOut();
     } catch (error) {
-      console.error('❌ Sign out failed:', error);
-    } finally {
-      setLoading(false);
+      console.error('Sign out failed:', error);
     }
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signOut,
-  };
+  const value = { user, session, loading, signOut };
 
-  // Show loading spinner during initial load (but not on auth page)
   if (!initialized && location.pathname !== '/auth') {
     return (
       <div className="flex items-center justify-center h-screen bg-background">

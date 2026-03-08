@@ -6,13 +6,13 @@ import {
   Plus,
   Settings,
   Trash2,
-  Bot,
   Key,
   LogOut,
   User,
   Zap,
   MoreHorizontal
 } from "lucide-react"
+import adigonLogo from "@/assets/adigon-logo.png"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -92,9 +92,7 @@ export default function AppSidebar({
         <SidebarHeader className="p-4 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Bot className="w-4 h-4 text-primary-foreground" />
-              </div>
+              <img src={adigonLogo} alt="AdiGon AI" className="w-8 h-8" />
               <span className="text-sm font-semibold text-foreground tracking-tight">AdiGon AI</span>
             </div>
           </div>
