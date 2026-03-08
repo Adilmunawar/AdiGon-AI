@@ -193,7 +193,8 @@ Always provide fully functional implementations.`;
             return updated;
           });
         },
-        fileData
+        fileData,
+        selectedModel
       );
 
       setIsStreaming(false);
