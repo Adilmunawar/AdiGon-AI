@@ -37,6 +37,7 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [conversations, setConversations] = useState<{id: string, title: string}[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -109,6 +110,16 @@ const Index = () => {
     if (messages.length > 0) setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [messages.length]);
 
+  // Auto-scroll during streaming
+  useEffect(() => {
+    if (isStreaming) {
+      const interval = setInterval(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [isStreaming]);
+
   const extractCodeFromResponse = (responseText: string): GeneratedCode[] => {
     const parsedFiles = parseContent(responseText);
     return parsedFiles.filter(file => file.path !== 'SYSTEM_MESSAGE').map(file => ({ fileName: file.path, content: file.code, language: file.language, errors: [] }));
@@ -158,11 +169,41 @@ Always provide fully functional implementations.`;
         fileData = { file: blob, base64, dataUrl: imageUrl };
       }
 
-      const aiResponse = await geminiService.generateResponse(enhancedMessage, systemPrompt, fileData);
+      // Use streaming response
       clearInterval(loadingInterval);
       setIsLoading(false);
+      setIsStreaming(true);
+
+      // Add empty AI message that will be filled by streaming
+      const aiMessageIndex = messages.length + 1; // +1 for user message we just added
+      setMessages(prev => [...prev, { role: "model" as const, parts: [{ text: "" }] }]);
+
+      const aiResponse = await geminiService.generateStreamingResponse(
+        enhancedMessage,
+        systemPrompt,
+        (_chunk, fullText) => {
+          // Update the last message (AI message) with accumulated text
+          setMessages(prev => {
+            const updated = [...prev];
+            const lastIdx = updated.length - 1;
+            if (lastIdx >= 0 && updated[lastIdx].role === 'model') {
+              updated[lastIdx] = { ...updated[lastIdx], parts: [{ text: fullText }] };
+            }
+            return updated;
+          });
+        },
+        fileData
+      );
+
+      setIsStreaming(false);
+
+      // Final update with complete response
       const aiMessage: Message = { role: "model" as const, parts: [{ text: aiResponse }] };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => {
+        const updated = [...prev];
+        updated[updated.length - 1] = aiMessage;
+        return updated;
+      });
 
       if (isCoderMode && (aiResponse.includes('FILE:') || aiResponse.includes('```'))) {
         const extractedFiles = extractCodeFromResponse(aiResponse);
@@ -201,6 +242,7 @@ Always provide fully functional implementations.`;
     } catch {
       clearInterval(loadingInterval);
       setIsLoading(false);
+      setIsStreaming(false);
       toast.error("Something went wrong");
       setMessages(currentMessages);
     }
@@ -264,6 +306,7 @@ Always provide fully functional implementations.`;
           <EnhancedChatInterface
             messages={messages}
             isLoading={isLoading}
+            isStreaming={isStreaming}
             loadingMessage={loadingMessage}
             examplePrompts={examplePrompts}
             handleSendMessage={handleSendMessage}
@@ -276,7 +319,7 @@ Always provide fully functional implementations.`;
           <EnhancedChatInput
             input={input}
             setInput={setInput}
-            isLoading={isLoading}
+            isLoading={isLoading || isStreaming}
             isCoderMode={isCoderMode}
             setIsCoderMode={setIsCoderMode}
             isDeepSearchMode={isDeepSearchMode}

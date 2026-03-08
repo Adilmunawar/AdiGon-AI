@@ -1,7 +1,6 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Pre-configured API keys for the application
 const API_KEYS = [
   'AIzaSyBnZCzRjQRc3wDgGDdC1kCLwcbGJRYuyMc',
   'AIzaSyC_cnrlsxeIx7i3MjIe5rl9QFbyk0qKlgA',
@@ -36,7 +35,7 @@ class GeminiService {
       try {
         const client = this.getNextClient();
         const model = client.getGenerativeModel({ 
-          model: "gemini-1.5-flash",
+          model: "gemini-2.5-flash-preview-05-20",
           systemInstruction: systemPrompt
         });
         
@@ -70,31 +69,52 @@ class GeminiService {
   async generateStreamingResponse(
     prompt: string,
     systemPrompt: string = "You are AdiGon AI, a helpful and creative assistant.",
-    onChunk?: (chunk: string) => void
+    onChunk: (chunk: string, fullText: string) => void,
+    fileData?: any
   ): Promise<string> {
-    try {
-      const client = this.getNextClient();
-      const model = client.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        systemInstruction: systemPrompt
-      });
-      
-      const result = await model.generateContentStream(prompt);
-      let fullResponse = '';
-      
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        fullResponse += chunkText;
-        if (onChunk) {
-          onChunk(chunkText);
+    const maxRetries = API_KEYS.length;
+    let attempt = 0;
+    
+    while (attempt < maxRetries) {
+      try {
+        const client = this.getNextClient();
+        const model = client.getGenerativeModel({ 
+          model: "gemini-2.5-flash-preview-05-20",
+          systemInstruction: systemPrompt
+        });
+        
+        let result;
+        if (fileData?.file) {
+          const imagePart = {
+            inlineData: {
+              data: fileData.base64,
+              mimeType: fileData.file.type
+            }
+          };
+          result = await model.generateContentStream([prompt, imagePart]);
+        } else {
+          result = await model.generateContentStream(prompt);
+        }
+        
+        let fullResponse = '';
+        for await (const chunk of result.stream) {
+          const chunkText = chunk.text();
+          fullResponse += chunkText;
+          onChunk(chunkText, fullResponse);
+        }
+        
+        return fullResponse;
+      } catch (error) {
+        console.warn(`Streaming API key ${attempt + 1} failed, trying next...`, error);
+        attempt++;
+        
+        if (attempt >= maxRetries) {
+          throw new Error('All API keys exhausted. Please try again later.');
         }
       }
-      
-      return fullResponse;
-    } catch (error) {
-      console.error('Streaming failed, falling back to regular generation:', error);
-      return this.generateResponse(prompt, systemPrompt);
     }
+    
+    throw new Error('Failed to generate streaming response');
   }
 }
 
