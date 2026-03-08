@@ -26,7 +26,8 @@ class GeminiService {
   async generateResponse(
     prompt: string, 
     systemPrompt: string = "You are AdiGon AI, a helpful and creative assistant.",
-    fileData?: any
+    fileData?: any,
+    modelId: string = "gemini-2.5-flash-preview-05-20"
   ): Promise<string> {
     const maxRetries = API_KEYS.length;
     let attempt = 0;
@@ -35,7 +36,7 @@ class GeminiService {
       try {
         const client = this.getNextClient();
         const model = client.getGenerativeModel({ 
-          model: "gemini-2.5-flash-preview-05-20",
+          model: modelId,
           systemInstruction: systemPrompt
         });
         
@@ -70,7 +71,8 @@ class GeminiService {
     prompt: string,
     systemPrompt: string = "You are AdiGon AI, a helpful and creative assistant.",
     onChunk: (chunk: string, fullText: string) => void,
-    fileData?: any
+    fileData?: any,
+    modelId: string = "gemini-2.5-flash-preview-05-20"
   ): Promise<string> {
     const maxRetries = API_KEYS.length;
     let attempt = 0;
@@ -79,7 +81,7 @@ class GeminiService {
       try {
         const client = this.getNextClient();
         const model = client.getGenerativeModel({ 
-          model: "gemini-2.5-flash-preview-05-20",
+          model: modelId,
           systemInstruction: systemPrompt
         });
         
