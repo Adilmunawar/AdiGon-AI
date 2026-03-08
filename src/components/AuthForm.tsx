@@ -85,13 +85,13 @@ export default function AuthForm() {
   return (
     <div className="w-full">
       {/* Mobile-only logo */}
-      <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-        <img src={adigonLogo} alt="AdiGon AI" className="w-9 h-9" />
-        <span className="text-base font-bold text-foreground tracking-tight">AdiGon AI</span>
+      <div className="flex items-center gap-2.5 mb-5 lg:hidden">
+        <img src={adigonLogo} alt="AdiGon AI" className="w-8 h-8" />
+        <span className="text-sm font-bold text-foreground tracking-tight">AdiGon AI</span>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex bg-muted/50 rounded-xl p-1 mb-8">
+      <div className="flex bg-muted/50 rounded-xl p-1 mb-5">
         <button
           onClick={() => { if (!isSignIn) toggleFormType(); }}
           className={cn(
