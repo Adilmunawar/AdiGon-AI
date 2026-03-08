@@ -142,10 +142,7 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-feature-settings: 'cv11', 'ss01';
     font-variation-settings: 'opsz' 32;
-    background: 
-      radial-gradient(ellipse 80% 80% at 50% -30%, hsl(var(--primary) / 0.15), transparent),
-      radial-gradient(ellipse 80% 80% at 80% 120%, hsl(var(--accent) / 0.1), transparent),
-      hsl(var(--background));
+    background: hsl(var(--background));
     min-height: 100vh;
   }
 
