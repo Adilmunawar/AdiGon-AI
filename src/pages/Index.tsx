@@ -265,6 +265,37 @@ Always provide fully functional implementations.`;
 
   const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
+  const handleRegenerate = () => {
+    // Find last user message and resend it
+    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    if (lastUserMsg) {
+      // Remove the last AI response
+      setMessages(prev => {
+        const idx = prev.length - 1;
+        if (prev[idx]?.role === 'model') return prev.slice(0, idx);
+        return prev;
+      });
+      // Re-trigger with original text (after state update)
+      setTimeout(() => {
+        const text = lastUserMsg.parts[0]?.text || '';
+        handleSendMessage(text);
+      }, 100);
+    }
+  };
+
+  const handleEditMessage = (newText: string) => {
+    // Remove last user message + AI response, then send edited version
+    setMessages(prev => {
+      const copy = [...prev];
+      // Remove last model message if exists
+      if (copy[copy.length - 1]?.role === 'model') copy.pop();
+      // Remove last user message
+      if (copy[copy.length - 1]?.role === 'user') copy.pop();
+      return copy;
+    });
+    setTimeout(() => handleSendMessage(newText), 100);
+  };
+
   const handleNewChat = async () => {
     setMessages([]);
     setActiveConversationId(null);
