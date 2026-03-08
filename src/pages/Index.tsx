@@ -8,10 +8,9 @@ import AppSidebar from '@/components/AppSidebar';
 import EnhancedChatInterface from '@/components/EnhancedChatInterface';
 import EnhancedChatInput from '@/components/EnhancedChatInput';
 import AdvancedDeveloperCanvas from '@/components/AdvancedDeveloperCanvas';
-import ThreeScene from '@/components/ThreeScene';
 import { Message } from '@/components/ChatMessage';
 import { useQuery } from '@tanstack/react-query';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { geminiService } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { FileUploadResult } from '@/services/uploadService';
@@ -19,20 +18,18 @@ import { GeneratedCode } from '@/services/advancedCodeGenerator';
 import { parseContent } from '@/components/CodeBlock';
 
 const loadingMessages = [
-  "Processing with advanced AI models...",
-  "Analyzing your request across multiple systems...",
-  "Leveraging parallel processing capabilities...",
-  "Generating optimized response...",
-  "Finalizing comprehensive answer...",
-  "Almost ready with your result...",
+  "Thinking...",
+  "Processing your request...",
+  "Analyzing...",
+  "Generating response...",
+  "Almost there...",
 ];
 
 const examplePrompts = [
-  { text: "Build a complete Instagram clone with authentication", icon: Code },
-  { text: "Create a professional dashboard with analytics", icon: Cpu },
-  { text: "Develop a real-time chat application", icon: MessageSquare },
-  { text: "Generate a complex e-commerce platform", icon: Brain },
-  { text: "Research latest AI development trends", icon: Search },
+  { text: "Build a complete Instagram clone with auth", icon: Code },
+  { text: "Create an analytics dashboard", icon: Cpu },
+  { text: "Develop a real-time chat app", icon: MessageSquare },
+  { text: "Research latest AI trends", icon: Search },
 ];
 
 const Index = () => {
@@ -55,11 +52,7 @@ const Index = () => {
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (error) throw error;
       return data;
     },
@@ -69,16 +62,10 @@ const Index = () => {
   const loadConversations = async () => {
     if (!user?.id) return;
     try {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('id, title, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('conversations').select('id, title, created_at').eq('user_id', user.id).order('created_at', { ascending: false });
       if (error) { toast.error("Failed to load conversations"); return; }
       setConversations(data || []);
-    } catch (error) {
-      toast.error("Failed to load conversations");
-    }
+    } catch { toast.error("Failed to load conversations"); }
   };
 
   useEffect(() => { if (user) loadConversations(); }, [user]);
@@ -86,39 +73,21 @@ const Index = () => {
   const handleSelectConversation = async (conversationId: string) => {
     setActiveConversationId(conversationId);
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+      const { data, error } = await supabase.from('messages').select('*').eq('conversation_id', conversationId).order('created_at', { ascending: true });
       if (error) { toast.error("Failed to load conversation"); return; }
-      const loadedMessages = data.map((msg: any) => ({
-        role: msg.role,
-        parts: msg.parts,
-        ...(msg.image_url && { imageUrl: msg.image_url })
-      }));
-      setMessages(loadedMessages);
-      toast.success("Conversation loaded successfully");
-      setTimeout(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
-    } catch (error) {
-      toast.error("Failed to load conversation");
-    }
+      setMessages(data.map((msg: any) => ({ role: msg.role, parts: msg.parts, ...(msg.image_url && { imageUrl: msg.image_url }) })));
+      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch { toast.error("Failed to load conversation"); }
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      const { error } = await supabase
-        .from('conversations')
-        .delete()
-        .eq('id', conversationId)
-        .eq('user_id', user?.id);
-      if (error) { toast.error("Failed to delete conversation"); return; }
+      const { error } = await supabase.from('conversations').delete().eq('id', conversationId).eq('user_id', user?.id);
+      if (error) { toast.error("Failed to delete"); return; }
       if (activeConversationId === conversationId) { setActiveConversationId(null); setMessages([]); }
       await loadConversations();
-      toast.success("Conversation deleted");
-    } catch (error) {
-      toast.error("Failed to delete conversation");
-    }
+      toast.success("Deleted");
+    } catch { toast.error("Failed to delete"); }
   };
 
   useEffect(() => {
@@ -137,16 +106,12 @@ const Index = () => {
   }, [messages.length]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
-    }
+    if (messages.length > 0) setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }, [messages.length]);
 
   const extractCodeFromResponse = (responseText: string): GeneratedCode[] => {
     const parsedFiles = parseContent(responseText);
-    return parsedFiles
-      .filter(file => file.path !== 'SYSTEM_MESSAGE')
-      .map(file => ({ fileName: file.path, content: file.code, language: file.language, errors: [] }));
+    return parsedFiles.filter(file => file.path !== 'SYSTEM_MESSAGE').map(file => ({ fileName: file.path, content: file.code, language: file.language, errors: [] }));
   };
 
   const handleSendMessage = async (messageText: string, attachments?: FileUploadResult[]) => {
@@ -166,20 +131,20 @@ const Index = () => {
     setIsLoading(true);
     let messageIndex = 0;
     setLoadingMessage(loadingMessages[messageIndex]);
-    const loadingInterval = setInterval(() => { messageIndex = (messageIndex + 1) % loadingMessages.length; setLoadingMessage(loadingMessages[messageIndex]); }, 2000);
+    const loadingInterval = setInterval(() => { messageIndex = (messageIndex + 1) % loadingMessages.length; setLoadingMessage(loadingMessages[messageIndex]); }, 2500);
 
     try {
-      let systemPrompt = "You are AdiGon AI, a sophisticated and highly advanced AI assistant with cutting-edge capabilities.";
+      let systemPrompt = "You are AdiGon AI, a sophisticated and highly advanced AI assistant.";
       if (isCoderMode) {
-        systemPrompt += ` You are in Advanced Developer Mode. Generate complete, enterprise-grade applications with multiple files, proper architecture, error handling, TypeScript, React, and modern best practices. 
-IMPORTANT: When generating code, use this exact format for multiple files:
+        systemPrompt += ` You are in Advanced Developer Mode. Generate complete, enterprise-grade applications with multiple files.
+IMPORTANT: When generating code, use this format:
 FILE: path/to/file.extension
 \`\`\`language
-// Complete, production-ready code here
+// Complete code here
 \`\`\`
-Always provide fully functional, complete implementations.`;
+Always provide fully functional implementations.`;
       }
-      if (isDeepSearchMode) systemPrompt += " You are in Deep Research Mode. Provide comprehensive, well-researched responses with multiple perspectives, detailed analysis, current information, and advanced insights.";
+      if (isDeepSearchMode) systemPrompt += " You are in Deep Research Mode. Provide comprehensive, well-researched responses with multiple perspectives and detailed analysis.";
 
       let fileData = null;
       if (imageUrl) {
@@ -205,12 +170,11 @@ Always provide fully functional, complete implementations.`;
           setCanvasInitialFiles(extractedFiles);
           setCanvasInitialCode('');
           setIsAdvancedCanvasOpen(true);
-          toast.success(`Generated ${extractedFiles.length} files - opened in Advanced Canvas!`);
+          toast.success(`Generated ${extractedFiles.length} files`);
         } else if (aiResponse.includes('```')) {
           setCanvasInitialCode(aiResponse);
           setCanvasInitialFiles([]);
           setIsAdvancedCanvasOpen(true);
-          toast.success("Code generated - opened in Advanced Canvas!");
         }
       }
 
@@ -218,29 +182,26 @@ Always provide fully functional, complete implementations.`;
         try {
           let conversationId = activeConversationId;
           if (!conversationId) {
-            const conversationTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
-            const { data: newConversation, error: convError } = await supabase.from('conversations').insert({ user_id: user.id, title: conversationTitle }).select().single();
-            if (convError) throw convError;
-            conversationId = newConversation.id;
+            const title = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
+            const { data: newConv, error } = await supabase.from('conversations').insert({ user_id: user.id, title }).select().single();
+            if (error) throw error;
+            conversationId = newConv.id;
             setActiveConversationId(conversationId);
             await loadConversations();
           }
-          const messagesToSave = [userMessage, aiMessage].map((msg, index) => ({
+          await supabase.from('messages').insert([userMessage, aiMessage].map((msg, i) => ({
             conversation_id: conversationId,
             parts: msg.parts,
             role: msg.role,
-            created_at: new Date(Date.now() + index).toISOString(),
+            created_at: new Date(Date.now() + i).toISOString(),
             ...(msg.imageUrl && { image_url: msg.imageUrl })
-          }));
-          await supabase.from('messages').insert(messagesToSave);
-        } catch (error) {
-          toast.error("Failed to save conversation");
-        }
+          })));
+        } catch { toast.error("Failed to save"); }
       }
-    } catch (error) {
+    } catch {
       clearInterval(loadingInterval);
       setIsLoading(false);
-      toast.error("I encountered an error processing your request.");
+      toast.error("Something went wrong");
       setMessages(currentMessages);
     }
   };
@@ -256,7 +217,7 @@ Always provide fully functional, complete implementations.`;
     setIsAdvancedCanvasOpen(true);
   };
 
-  const scrollToBottom = () => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const handleNewChat = async () => {
     setMessages([]);
@@ -268,36 +229,37 @@ Always provide fully functional, complete implementations.`;
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background overflow-hidden relative">
-        {/* Sidebar */}
-        <div className="relative z-30">
-          <AppSidebar
-            isSettingsOpen={false}
-            setIsSettingsOpen={() => {}}
-            tempApiKey=""
-            setTempApiKey={() => {}}
-            handleSaveApiKey={() => {}}
-            handleNewChat={handleNewChat}
-            conversations={conversations}
-            activeConversationId={activeConversationId}
-            onSelectConversation={handleSelectConversation}
-            onDeleteConversation={handleDeleteConversation}
-          />
-        </div>
+      <div className="flex h-screen w-full bg-background overflow-hidden">
+        <AppSidebar
+          isSettingsOpen={false}
+          setIsSettingsOpen={() => {}}
+          tempApiKey=""
+          setTempApiKey={() => {}}
+          handleSaveApiKey={() => {}}
+          handleNewChat={handleNewChat}
+          conversations={conversations}
+          activeConversationId={activeConversationId}
+          onSelectConversation={handleSelectConversation}
+          onDeleteConversation={handleDeleteConversation}
+        />
         
-        {/* Main Content Area */}
-        <div className="flex flex-col flex-1 min-w-0 relative z-20">
-          {/* Advanced Developer Canvas Button */}
-          <div className="absolute top-4 right-4 z-40">
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Top bar */}
+          <header className="flex items-center justify-between h-12 px-4 border-b border-border/60 bg-background">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+              <span className="text-sm font-medium text-foreground/80">AdiGon AI</span>
+            </div>
             <Button
               onClick={() => setIsAdvancedCanvasOpen(true)}
+              variant="outline"
               size="sm"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg border border-primary/20"
+              className="h-7 text-xs rounded-lg border-border text-muted-foreground hover:text-primary hover:border-primary/30 gap-1.5"
             >
-              <Zap className="w-4 h-4 mr-2" />
-              Advanced Canvas
+              <Zap className="w-3 h-3" />
+              Canvas
             </Button>
-          </div>
+          </header>
 
           <EnhancedChatInterface
             messages={messages}
@@ -323,19 +285,12 @@ Always provide fully functional, complete implementations.`;
           />
         </div>
 
-        {/* Advanced Developer Canvas */}
-        <div className="relative z-50">
-          <AdvancedDeveloperCanvas
-            isOpen={isAdvancedCanvasOpen}
-            onClose={() => {
-              setIsAdvancedCanvasOpen(false);
-              setCanvasInitialCode('');
-              setCanvasInitialFiles([]);
-            }}
-            initialCode={canvasInitialCode}
-            initialFiles={canvasInitialFiles}
-          />
-        </div>
+        <AdvancedDeveloperCanvas
+          isOpen={isAdvancedCanvasOpen}
+          onClose={() => { setIsAdvancedCanvasOpen(false); setCanvasInitialCode(''); setCanvasInitialFiles([]); }}
+          initialCode={canvasInitialCode}
+          initialFiles={canvasInitialFiles}
+        />
       </div>
     </SidebarProvider>
   );
