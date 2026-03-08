@@ -27,6 +27,10 @@ interface ChatMessageProps {
   message: Message;
   onReviewCode?: (code: string) => void;
   isStreaming?: boolean;
+  onRegenerate?: () => void;
+  onEditMessage?: (newText: string) => void;
+  isLastUserMessage?: boolean;
+  isLastModelMessage?: boolean;
 }
 
 const UserMessageContent = ({ text }: { text: string }) => {
