@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
-import { LoaderCircle, Eye, EyeOff, AlertCircle, CheckCircle, Bot, Mail, Lock, User } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff, AlertCircle, CheckCircle, Bot, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import DeveloperCredit from "./DeveloperCredit";
+import { cn } from "@/lib/utils";
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -45,10 +46,10 @@ export default function AuthForm() {
 
   const handleAuthError = (error: any) => {
     const msg = error?.message || 'An unexpected error occurred';
-    if (msg.includes('Invalid login credentials')) return 'Invalid email or password.';
-    if (msg.includes('Email not confirmed')) return 'Please confirm your email first.';
-    if (msg.includes('User already registered')) return 'Account exists. Please sign in.';
-    if (msg.includes('Too many requests')) return 'Too many attempts. Please wait.';
+    if (msg.includes('Invalid login credentials')) return 'Invalid email or password. Please try again.';
+    if (msg.includes('Email not confirmed')) return 'Please check your inbox and confirm your email.';
+    if (msg.includes('User already registered')) return 'This account already exists. Try signing in.';
+    if (msg.includes('Too many requests')) return 'Too many attempts. Please wait a moment.';
     return msg;
   };
 
@@ -63,135 +64,188 @@ export default function AuthForm() {
         if (error) { setAuthError(handleAuthError(error)); return; }
         if (data.user) { setAuthSuccess('Welcome back!'); toast.success("Signed in!"); form.reset(); }
       } else {
-        if (!values.name?.trim()) { setAuthError('Name is required'); return; }
-        if (!values.gender) { setAuthError('Please select gender'); return; }
+        if (!values.name?.trim()) { setAuthError('Please enter your name.'); return; }
+        if (!values.gender) { setAuthError('Please select your gender.'); return; }
         const { data, error } = await supabase.auth.signUp({
           email: values.email, password: values.password,
           options: { data: { name: values.name.trim(), gender: values.gender }, emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) { setAuthError(handleAuthError(error)); return; }
         if (data.user) {
-          setAuthSuccess(data.user.email_confirmed_at ? 'Account created!' : 'Check your email for confirmation.');
+          setAuthSuccess(data.user.email_confirmed_at ? 'Account created successfully!' : 'Check your email to confirm your account.');
           toast.success("Account created!");
           form.reset();
           setTimeout(() => { setIsSignIn(true); setAuthSuccess(null); }, 3000);
         }
       }
-    } catch { setAuthError('Something went wrong.'); } finally { setIsSubmitting(false); }
+    } catch { setAuthError('Something went wrong. Please try again.'); } finally { setIsSubmitting(false); }
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/8 mb-5">
-          <Bot className="w-6 h-6 text-primary" />
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-2.5 mb-6">
+          <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-primary" />
+          </div>
+          <span className="text-base font-semibold text-foreground tracking-tight">AdiGon AI</span>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground mb-1.5">
-          {isSignIn ? "Welcome back" : "Create account"}
+        
+        <h1 className="text-[28px] font-bold tracking-tight text-foreground mb-2 leading-tight">
+          {isSignIn ? "Welcome back" : "Create your account"}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          {isSignIn ? "Sign in to continue" : "Get started with AdiGon AI"}
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {isSignIn 
+            ? "Enter your credentials to access your account" 
+            : "Start your journey with AdiGon AI today"
+          }
         </p>
       </div>
 
-      <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm">
-        {authSuccess && (
-          <Alert className="mb-4 border-primary/20 bg-primary/5 text-primary">
-            <CheckCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">{authSuccess}</AlertDescription>
-          </Alert>
-        )}
-        {authError && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">{authError}</AlertDescription>
-          </Alert>
-        )}
+      {/* Alerts */}
+      {authSuccess && (
+        <Alert className="mb-5 border-primary/20 bg-primary/5 text-primary rounded-xl">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription className="text-sm font-medium">{authSuccess}</AlertDescription>
+        </Alert>
+      )}
+      {authError && (
+        <Alert variant="destructive" className="mb-5 rounded-xl">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-sm">{authError}</AlertDescription>
+        </Alert>
+      )}
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {!isSignIn && (
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">Name</FormLabel>
+      {/* Form */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {!isSignIn && (
+            <FormField control={form.control} name="name" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-foreground/80">Full Name</FormLabel>
+                <FormControl>
+                  <div className="relative group">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
+                    <Input 
+                      placeholder="John Doe" 
+                      {...field} 
+                      disabled={isSubmitting} 
+                      className="pl-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          )}
+
+          <FormField control={form.control} name="email" render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-foreground/80">Email</FormLabel>
+              <FormControl>
+                <div className="relative group">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
+                  <Input 
+                    type="email" 
+                    placeholder="you@example.com" 
+                    {...field} 
+                    disabled={isSubmitting} 
+                    autoComplete="email" 
+                    className="pl-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
+          <FormField control={form.control} name="password" render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[13px] font-medium text-foreground/80">Password</FormLabel>
+              <FormControl>
+                <div className="relative group">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
+                  <Input 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="••••••••" 
+                    {...field} 
+                    disabled={isSubmitting} 
+                    className="pl-11 pr-11 h-11 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)} 
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+                  </button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+
+          {!isSignIn && (
+            <FormField control={form.control} name="gender" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[13px] font-medium text-foreground/80">Gender</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 h-4 w-4" />
-                      <Input placeholder="Your name" {...field} disabled={isSubmitting} className="pl-9 h-10 bg-background border-border" />
-                    </div>
+                    <SelectTrigger className="h-11 bg-background border-border/80 rounded-xl text-[15px]">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            )}
-
-            <FormField control={form.control} name="email" render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-foreground">Email</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 h-4 w-4" />
-                    <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} autoComplete="email" className="pl-9 h-10 bg-background border-border" />
-                  </div>
-                </FormControl>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )} />
+          )}
 
-            <FormField control={form.control} name="password" render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-foreground">Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 h-4 w-4" />
-                    <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-9 pr-10 h-10 bg-background border-border" />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            {!isSignIn && (
-              <FormField control={form.control} name="gender" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-foreground">Gender</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
-                    <FormControl>
-                      <SelectTrigger className="h-10 bg-background border-border">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            )}
-
-            <Button type="submit" className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-medium" disabled={isSubmitting}>
-              {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+          <div className="pt-1">
+            <Button 
+              type="submit" 
+              className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl text-[15px] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-primary/10 group" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
               {isSignIn ? "Sign In" : "Create Account"}
+              {!isSubmitting && <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />}
             </Button>
-          </form>
-        </Form>
+          </div>
+        </form>
+      </Form>
 
-        <div className="mt-4 pt-4 border-t border-border/60 text-center">
-          <button onClick={toggleFormType} disabled={isSubmitting} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            {isSignIn ? "Don't have an account? " : "Already have an account? "}
-            <span className="text-primary font-medium">{isSignIn ? "Sign up" : "Sign in"}</span>
-          </button>
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border/60" />
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-background px-3 text-xs text-muted-foreground/60">
+            {isSignIn ? "New to AdiGon AI?" : "Already have an account?"}
+          </span>
         </div>
       </div>
 
-      <div className="mt-6">
+      {/* Toggle */}
+      <button 
+        onClick={toggleFormType} 
+        disabled={isSubmitting} 
+        className="w-full h-11 rounded-xl border border-border/80 bg-background text-sm font-medium text-foreground hover:bg-card hover:border-primary/20 transition-all duration-200"
+      >
+        {isSignIn ? "Create a free account" : "Sign in instead"}
+      </button>
+
+      <div className="mt-8">
         <DeveloperCredit />
       </div>
     </div>
