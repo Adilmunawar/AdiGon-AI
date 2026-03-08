@@ -117,11 +117,11 @@ export default function AuthForm() {
       </div>
 
       {/* Header text */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1.5">
+      <div className="mb-4">
+        <h1 className="text-xl font-bold tracking-tight text-foreground mb-1">
           {isSignIn ? "Welcome back" : "Get started"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           {isSignIn ? "Enter your credentials to continue" : "Create your free account to begin"}
         </p>
       </div>
