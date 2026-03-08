@@ -326,6 +326,8 @@ Always provide fully functional implementations.`;
             isDeepSearchMode={isDeepSearchMode}
             setIsDeepSearchMode={setIsDeepSearchMode}
             onSubmit={onFormSubmit}
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
           />
         </div>
 
