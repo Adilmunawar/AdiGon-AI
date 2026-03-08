@@ -31,7 +31,9 @@ const EnhancedChatInterface = ({
   onReviewCode,
   messagesEndRef,
   showScrollButton,
-  scrollToBottom
+  scrollToBottom,
+  onRegenerate,
+  onEditMessage
 }: EnhancedChatInterfaceProps) => {
   const isMobile = useIsMobile();
 
