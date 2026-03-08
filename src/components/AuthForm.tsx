@@ -85,13 +85,13 @@ export default function AuthForm() {
   return (
     <div className="w-full">
       {/* Mobile-only logo */}
-      <div className="flex items-center gap-2.5 mb-8 lg:hidden">
-        <img src={adigonLogo} alt="AdiGon AI" className="w-9 h-9" />
-        <span className="text-base font-bold text-foreground tracking-tight">AdiGon AI</span>
+      <div className="flex items-center gap-2.5 mb-5 lg:hidden">
+        <img src={adigonLogo} alt="AdiGon AI" className="w-8 h-8" />
+        <span className="text-sm font-bold text-foreground tracking-tight">AdiGon AI</span>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex bg-muted/50 rounded-xl p-1 mb-8">
+      <div className="flex bg-muted/50 rounded-xl p-1 mb-5">
         <button
           onClick={() => { if (!isSignIn) toggleFormType(); }}
           className={cn(
@@ -117,11 +117,11 @@ export default function AuthForm() {
       </div>
 
       {/* Header text */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1.5">
+      <div className="mb-4">
+        <h1 className="text-xl font-bold tracking-tight text-foreground mb-1">
           {isSignIn ? "Welcome back" : "Get started"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[13px] text-muted-foreground">
           {isSignIn ? "Enter your credentials to continue" : "Create your free account to begin"}
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function AuthForm() {
 
       {/* Form */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
           {!isSignIn && (
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem>
@@ -150,7 +150,7 @@ export default function AuthForm() {
                 <FormControl>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                    <Input placeholder="John Doe" {...field} disabled={isSubmitting} className="pl-11 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                    <Input placeholder="John Doe" {...field} disabled={isSubmitting} className="pl-11 h-10 bg-background border-border/80 rounded-xl text-sm transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -164,7 +164,7 @@ export default function AuthForm() {
               <FormControl>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                  <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} autoComplete="email" className="pl-11 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                  <Input type="email" placeholder="you@example.com" {...field} disabled={isSubmitting} autoComplete="email" className="pl-11 h-10 bg-background border-border/80 rounded-xl text-sm transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -177,7 +177,7 @@ export default function AuthForm() {
               <FormControl>
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 h-[18px] w-[18px] transition-colors group-focus-within:text-primary/60" />
-                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-11 pr-12 h-12 bg-background border-border/80 rounded-xl text-[15px] transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
+                  <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} disabled={isSubmitting} className="pl-11 pr-12 h-10 bg-background border-border/80 rounded-xl text-sm transition-all focus:border-primary/30 focus:shadow-[0_0_0_3px_hsl(168_80%_38%/0.06)]" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition-colors">
                     {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
                   </button>
@@ -193,7 +193,7 @@ export default function AuthForm() {
                 <FormLabel className="text-[13px] font-medium text-foreground/80">Gender</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl>
-                    <SelectTrigger className="h-12 bg-background border-border/80 rounded-xl text-[15px]">
+                    <SelectTrigger className="h-10 bg-background border-border/80 rounded-xl text-sm">
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>
                   </FormControl>
@@ -209,10 +209,10 @@ export default function AuthForm() {
             )} />
           )}
 
-          <div className="pt-2">
+          <div className="pt-1">
             <Button 
               type="submit" 
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-[15px] transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-primary/15 group" 
+              className="w-full h-10 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-primary/15 group" 
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -225,7 +225,7 @@ export default function AuthForm() {
         </form>
       </Form>
 
-      <div className="mt-8">
+      <div className="mt-4">
         <DeveloperCredit />
       </div>
     </div>
