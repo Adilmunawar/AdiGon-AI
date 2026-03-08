@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
 import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Code, MessageSquare, Search, Sparkles, Zap, Cpu, Brain } from 'lucide-react';
+import { Code, MessageSquare, Search, Sparkles, Zap, Cpu } from 'lucide-react';
 import AppSidebar from '@/components/AppSidebar';
 import EnhancedChatInterface from '@/components/EnhancedChatInterface';
 import EnhancedChatInput from '@/components/EnhancedChatInput';
@@ -283,29 +283,29 @@ Always provide fully functional implementations.`;
         />
         
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Premium top bar */}
-          <header className="flex items-center justify-between h-13 px-4 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-muted-foreground hover:text-foreground transition-colors" />
-              <div className="h-5 w-px bg-border/60" />
+          {/* Top bar */}
+          <header className="flex items-center justify-between h-12 px-3 border-b border-border/30 glass z-10">
+            <div className="flex items-center gap-2.5">
+              <SidebarTrigger className="text-muted-foreground/60 hover:text-foreground transition-colors" />
+              <div className="h-4 w-px bg-border/40" />
               <div className="flex items-center gap-2">
                 <img src={adigonLogo} alt="AdiGon AI" className="w-5 h-5" />
-                <span className="text-sm font-semibold text-foreground tracking-tight">AdiGon AI</span>
+                <span className="text-[13px] font-bold text-foreground tracking-tight">AdiGon AI</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {userProfile?.name && (
-                <span className="text-xs text-muted-foreground hidden sm:block">
-                  Hi, {userProfile.name.split(' ')[0]}
+                <span className="text-[11px] text-muted-foreground/50 hidden sm:block font-medium">
+                  {userProfile.name.split(' ')[0]}
                 </span>
               )}
               <Button
                 onClick={() => setIsAdvancedCanvasOpen(true)}
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs rounded-lg border-border/60 text-muted-foreground hover:text-primary hover:border-primary/30 gap-1.5 transition-all"
+                className="h-7 text-[11px] rounded-lg border-border/40 text-muted-foreground/60 hover:text-primary hover:border-primary/20 gap-1.5 transition-all font-medium"
               >
-                <Zap className="w-3.5 h-3.5" />
+                <Zap className="w-3 h-3" />
                 Canvas
               </Button>
             </div>
