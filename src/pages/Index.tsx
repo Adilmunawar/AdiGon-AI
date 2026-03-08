@@ -384,6 +384,8 @@ Always provide fully functional implementations.`;
             messagesEndRef={messagesEndRef}
             showScrollButton={showScrollButton}
             scrollToBottom={scrollToBottom}
+            onRegenerate={handleRegenerate}
+            onEditMessage={handleEditMessage}
           />
           
           <EnhancedChatInput
