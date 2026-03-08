@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { User, Copy, Code, Paperclip, Volume2, VolumeX, Check } from "lucide-react";
+import { User, Copy, Code, Paperclip, Volume2, VolumeX, Check, ThumbsUp, ThumbsDown, RefreshCw, Pencil } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -27,6 +27,10 @@ interface ChatMessageProps {
   message: Message;
   onReviewCode?: (code: string) => void;
   isStreaming?: boolean;
+  onRegenerate?: () => void;
+  onEditMessage?: (newText: string) => void;
+  isLastUserMessage?: boolean;
+  isLastModelMessage?: boolean;
 }
 
 const UserMessageContent = ({ text }: { text: string }) => {
@@ -56,10 +60,13 @@ const StreamingCursor = () => (
   <span className="inline-block w-[2px] h-[1.1em] bg-primary ml-0.5 align-middle animate-pulse" />
 );
 
-const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessageProps) => {
+const ChatMessage = ({ message, onReviewCode, isStreaming = false, onRegenerate, onEditMessage, isLastUserMessage = false, isLastModelMessage = false }: ChatMessageProps) => {
   const isUser = message.role === "user";
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState('');
   const messageText = message.parts.map((part) => part.text).join("\n");
 
   const handleCopy = () => {
@@ -163,7 +170,22 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
             : "text-foreground"
         )}>
           {isUser ? (
-            message.parts.map((part, index) => <UserMessageContent key={index} text={part.text} />)
+            isEditing ? (
+              <div className="space-y-2">
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full min-h-[60px] bg-background text-foreground rounded-xl p-3 text-sm border border-border/50 focus:outline-none focus:ring-1 focus:ring-primary/30 resize-none"
+                  autoFocus
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} className="h-7 text-xs rounded-lg">Cancel</Button>
+                  <Button size="sm" onClick={() => { if (onEditMessage && editText.trim()) { onEditMessage(editText.trim()); setIsEditing(false); } }} className="h-7 text-xs rounded-lg">Send</Button>
+                </div>
+              </div>
+            ) : (
+              message.parts.map((part, index) => <UserMessageContent key={index} text={part.text} />)
+            )
           ) : (
             <div className="prose-sm max-w-none">
               <ReactMarkdown components={MarkdownComponents} remarkPlugins={[remarkGfm]}>{messageText}</ReactMarkdown>
@@ -184,14 +206,54 @@ const ChatMessage = ({ message, onReviewCode, isStreaming = false }: ChatMessage
           )}
         </div>
         
-        {/* Actions */}
+        {/* AI Actions: copy, speak, feedback, regenerate */}
         {!isUser && !isStreaming && messageText && (
-          <div className="flex gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="flex items-center gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
             <button onClick={handleCopy} className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-foreground hover:bg-muted/50 transition-all" aria-label="Copy">
               {copied ? <Check size={13} className="text-primary" /> : <Copy size={13} />}
             </button>
             <button onClick={handleSpeak} className={cn("p-1.5 rounded-lg transition-all", isSpeaking ? "text-primary bg-primary/5" : "text-muted-foreground/30 hover:text-foreground hover:bg-muted/50")} aria-label="Speak">
               {isSpeaking ? <VolumeX size={13} /> : <Volume2 size={13} />}
+            </button>
+            <div className="w-px h-3 bg-border/30 mx-1" />
+            <button
+              onClick={() => { setFeedback(f => f === 'up' ? null : 'up'); toast.success('Thanks for the feedback!'); }}
+              className={cn("p-1.5 rounded-lg transition-all", feedback === 'up' ? "text-primary bg-primary/10" : "text-muted-foreground/30 hover:text-foreground hover:bg-muted/50")}
+              aria-label="Thumbs up"
+            >
+              <ThumbsUp size={13} />
+            </button>
+            <button
+              onClick={() => { setFeedback(f => f === 'down' ? null : 'down'); toast.success('Thanks for the feedback!'); }}
+              className={cn("p-1.5 rounded-lg transition-all", feedback === 'down' ? "text-destructive bg-destructive/10" : "text-muted-foreground/30 hover:text-foreground hover:bg-muted/50")}
+              aria-label="Thumbs down"
+            >
+              <ThumbsDown size={13} />
+            </button>
+            {isLastModelMessage && onRegenerate && (
+              <>
+                <div className="w-px h-3 bg-border/30 mx-1" />
+                <button
+                  onClick={onRegenerate}
+                  className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-foreground hover:bg-muted/50 transition-all"
+                  aria-label="Regenerate"
+                >
+                  <RefreshCw size={13} />
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* User edit action */}
+        {isUser && !isEditing && isLastUserMessage && onEditMessage && (
+          <div className="flex gap-0.5 mt-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <button
+              onClick={() => { setEditText(messageText); setIsEditing(true); }}
+              className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-foreground hover:bg-muted/50 transition-all"
+              aria-label="Edit message"
+            >
+              <Pencil size={13} />
             </button>
           </div>
         )}

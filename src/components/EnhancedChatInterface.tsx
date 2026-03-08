@@ -17,6 +17,8 @@ interface EnhancedChatInterfaceProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
   showScrollButton: boolean;
   scrollToBottom: () => void;
+  onRegenerate?: () => void;
+  onEditMessage?: (newText: string) => void;
 }
 
 const EnhancedChatInterface = ({
@@ -29,7 +31,9 @@ const EnhancedChatInterface = ({
   onReviewCode,
   messagesEndRef,
   showScrollButton,
-  scrollToBottom
+  scrollToBottom,
+  onRegenerate,
+  onEditMessage
 }: EnhancedChatInterfaceProps) => {
   const isMobile = useIsMobile();
 
@@ -54,6 +58,8 @@ const EnhancedChatInterface = ({
         <div className="space-y-1">
           {messages.map((msg, index) => {
             const isLastModel = msg.role === 'model' && index === messages.length - 1;
+            const isLastUser = msg.role === 'user' && (index === messages.length - 1 || index === messages.length - 2);
+            const isLastModelMsg = msg.role === 'model' && !messages.slice(index + 1).some(m => m.role === 'model');
             return (
               <div 
                 key={index} 
@@ -64,6 +70,10 @@ const EnhancedChatInterface = ({
                   message={msg} 
                   onReviewCode={onReviewCode} 
                   isStreaming={isLastModel && isStreaming}
+                  onRegenerate={isLastModelMsg ? onRegenerate : undefined}
+                  onEditMessage={isLastUser && msg.role === 'user' ? onEditMessage : undefined}
+                  isLastUserMessage={isLastUser && msg.role === 'user'}
+                  isLastModelMessage={isLastModelMsg}
                 />
               </div>
             );
