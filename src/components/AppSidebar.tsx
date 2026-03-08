@@ -6,13 +6,13 @@ import {
   Plus,
   Settings,
   Trash2,
-  Bot,
   Key,
   LogOut,
   User,
   Zap,
   MoreHorizontal
 } from "lucide-react"
+import adigonLogo from "@/assets/adigon-logo.png"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
